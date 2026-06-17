@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Orang Tua – AIDA BIMBEL</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pink:#86efac;--pink-soft:#dcfce7;--pink-dark:#16a34a;--pink-ink:#166534;
+  --blue:#86efac;--blue-soft:#dcfce7;--blue-dark:#15803d;--blue-ink:#166534;
+  --mint:#86efac;--mint-soft:#dcfce7;--mint-ink:#166534;
+  --lilac:#D9C7F0;--lilac-soft:#F4EEFB;--lilac-ink:#8A6FB5;
+  --yellow:#FFE3A3;--yellow-soft:#FFF6E3;--yellow-ink:#B98A2E;
+  --cream:#f8fafc;--white:#FFFFFF;
+  --ink:#1e293b;--ink-strong:#0f172a;--muted:#64748b;--border:#e2e8f0;
+  --green:#16a34a;--red:#E87979;--red-soft:#FDEEEE;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--cream);color:var(--ink-strong);min-height:100vh}
+input,select,textarea,button{font-family:'Plus Jakarta Sans',sans-serif}
+
+.app-header{background:#15803d;height:62px;display:flex;align-items:center;padding:0 20px;gap:12px;position:sticky;top:0;z-index:100;border-bottom:none}
+.logo-img-sm{width:42px;height:42px;border-radius:12px;object-fit:contain;flex-shrink:0}
+.app-title{font-size:18px;font-weight:800;color:#fff;line-height:1}
+.app-sub{font-size:11px;color:rgba(255,255,255,.75);font-weight:700;margin-top:2px}
+.header-badge{margin-left:auto;background:rgba(255,255,255,.15);color:#fff;padding:5px 14px;border-radius:999px;font-size:11px;font-weight:800;border:1.5px solid rgba(255,255,255,.3)}
+.logout-btn{background:none;border:1.5px solid rgba(255,255,255,.4);border-radius:999px;padding:5px 12px;font-size:11px;font-weight:800;color:rgba(255,255,255,.85);cursor:pointer}
+.logout-btn:hover{color:#fff;border-color:#fff}
+
+.hero{padding:28px 20px 24px;text-align:center;position:relative;overflow:hidden}
+.hero h1{font-size:24px;font-weight:800;color:var(--ink-strong);margin-bottom:6px}
+.hero h1 .hl{color:var(--green)}
+.hero p{font-size:13px;color:var(--muted);font-weight:600}
+.cloud{position:absolute;background:var(--white);border-radius:999px;opacity:.85;box-shadow:0 4px 16px rgba(167,199,231,.25)}
+.cloud::before,.cloud::after{content:'';position:absolute;background:inherit;border-radius:50%}
+.cloud.c1{width:90px;height:32px;top:16px;left:6%}
+.cloud.c1::before{width:38px;height:38px;top:-16px;left:14px}
+.cloud.c1::after{width:26px;height:26px;top:-10px;left:46px}
+.spark{position:absolute;color:var(--pink);font-size:15px;animation:tw 2.4s ease-in-out infinite}
+.spark.s2{color:var(--blue);animation-delay:.7s}
+@keyframes tw{0%,100%{opacity:.25;transform:scale(.85)}50%{opacity:1;transform:scale(1.12)}}
+
+#loadingOverlay{position:fixed;inset:0;background:rgba(255,251,247,.92);z-index:999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.spinner{width:40px;height:40px;border:4px solid var(--pink-soft);border-top-color:var(--pink-dark);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loadingOverlay p{color:var(--pink-ink);font-weight:800;font-size:14px}
+
+main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
+.card{background:var(--white);border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 3px 16px rgba(232,145,165,.10);border:1.5px solid var(--border)}
+.card-title{font-family:'Baloo 2',cursive;font-weight:800;font-size:16px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+.form-field label{font-size:11px;font-weight:800;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.form-field input{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:13px;font-size:15px;font-weight:700;color:var(--ink-strong);outline:none}
+.form-field input:focus{border-color:var(--pink-dark)}
+
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800}
+.prog-Tutor{background:var(--blue-soft);color:var(--blue-ink)}
+.prog-Swim{background:var(--mint-soft);color:var(--mint-ink)}
+.prog-Art{background:var(--yellow-soft);color:var(--yellow-ink)}
+.prog-Mandarin{background:var(--lilac-soft);color:var(--lilac-ink)}
+.bg-pink{background:var(--pink-soft);color:var(--pink-ink)}
+.bg-mint{background:var(--mint-soft);color:var(--mint-ink)}
+.bg-red{background:var(--red-soft);color:#C0564F}
+
+.anak-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:4px 0 8px}
+.anak-chip{padding:9px 20px;border-radius:999px;font-size:14px;font-weight:800;border:2px dashed var(--blue);background:var(--white);color:var(--blue-ink);cursor:pointer;transition:all .2s;font-family:'Baloo 2',cursive}
+.anak-chip:hover{transform:translateY(-2px)}
+.anak-chip.active{background:var(--pink-dark);border-color:var(--pink-dark);color:#fff;box-shadow:0 4px 12px rgba(232,145,165,.4)}
+
+.prog-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.prog-chip{padding:5px 14px;border-radius:999px;font-size:12px;font-weight:800;border:1.5px solid var(--border);background:var(--white);color:var(--muted);cursor:pointer}
+.prog-chip.active{background:var(--blue-soft);border-color:var(--blue);color:var(--blue-ink)}
+
+.prog-bar{background:var(--pink-soft);border-radius:999px;height:14px;overflow:hidden;margin-top:6px}
+.prog-fill{background:linear-gradient(90deg,var(--blue-dark),var(--pink-dark));height:100%;border-radius:999px;transition:width .6s}
+.kelas-item{border:1.5px dashed var(--blue);border-radius:14px;padding:12px 14px;margin-bottom:10px;background:var(--blue-soft)}
+
+.history-item{border:1.5px solid var(--border);border-radius:14px;margin-bottom:8px;overflow:hidden}
+.hi-head{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;background:var(--white)}
+.hi-head:hover{background:var(--pink-soft)}
+.hi-body{display:none;padding:10px 14px;border-top:1.5px dashed var(--border);font-size:13px;line-height:1.7;color:var(--ink)}
+.hi-body.open{display:block}
+.stars{color:#FFB95E;letter-spacing:1px}
+
+.inv-item{border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:12px;font-size:12.5px;font-weight:800;border:none;cursor:pointer}
+.btn-primary{background:var(--green);color:#fff}.btn-primary:hover{background:#15803d}
+.btn-blue{background:var(--blue-soft);color:var(--blue-ink);border:1.5px solid var(--blue)}
+.btn-full{width:100%;justify-content:center;padding:13px;font-size:14px}
+
+.empty-state{text-align:center;padding:24px;color:var(--muted);font-size:13px;font-weight:600}
+.login-err{background:var(--red-soft);border:2px dashed #F5C2C2;border-radius:13px;padding:11px 14px;font-size:13px;color:#C0564F;font-weight:800;margin-bottom:12px;display:none}
+
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(40px);background:var(--ink-strong);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;font-weight:800;z-index:9999;transition:all .3s;white-space:nowrap;opacity:0}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+#toast.success{background:var(--green)}#toast.error{background:var(--red)}
+.tagline{text-align:center;font-style:italic;font-weight:800;font-size:13px;color:var(--blue-ink);margin-top:20px}
+.tagline .pk{color:var(--pink-ink)}
+</style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <p>Memuat data... ✦</p>
+</div>
+
+<header class="app-header">
+  <img src="logo.png" alt="AIDA BIMBEL" class="logo-img-sm" onerror="this.style.display='none'">
+  <div>
+    <div class="app-title">AIDA BIMBEL</div>
+    <div class="app-sub">Portal Orang Tua</div>
+  </div>
+  <div class="header-badge">👨‍👩‍👧 Parents</div>
+  <button class="logout-btn" id="logoutBtn" style="display:none" onclick="logout()">Keluar</button>
+</header>
+
+<div class="hero">
+  <div class="cloud c1"></div>
+  <span class="spark" style="top:22px;left:30%">✦</span>
+  <span class="spark s2" style="top:60px;right:26%">✦</span>
+  <h1 id="heroTitle">Selamat Datang, <span class="hl">Parents</span> 👋</h1>
+  <p id="heroSub">Login dengan nomor HP yang terdaftar di admin AIDA BIMBEL</p>
+</div>
+
+<!-- LOGIN -->
+<main id="loginView">
+  <div class="card" style="max-width:420px;margin:0 auto">
+    <div class="card-title">🔐 Masuk Portal</div>
+    <div class="login-err" id="loginErr"></div>
+    <div class="form-field" style="margin-bottom:16px">
+      <label>Nomor HP (yang terdaftar di admin)</label>
+      <input type="tel" id="loginPhone" placeholder="08..." inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary btn-full" id="loginBtn" onclick="doLogin()">✨ Masuk</button>
+    <div style="font-size:12px;color:var(--muted);font-weight:700;text-align:center;margin-top:12px">Nomor belum terdaftar? Hubungi admin AIDA BIMBEL ya 🙏</div>
+  </div>
+  <div class="tagline">☆ Belajar dengan semangat bersama <span class="pk">AIDA BIMBEL</span> ☆</div>
+</main>
+
+<!-- KONTEN -->
+<main id="mainContent" style="display:none">
+
+  <div class="anak-chips" id="anakChips"></div>
+
+  <div class="card">
+    <div class="card-title">📊 Progres Sesi</div>
+    <div id="kelasList"><div class="empty-state">Memuat...</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📝 Laporan Belajar Terbaru</div>
+    <div class="prog-chips" id="progChips" style="display:none"></div>
+    <div id="laporanList"><div class="empty-state">Memuat...</div></div>
+    <div id="lapPager" style="display:none;justify-content:center;align-items:center;gap:14px;margin-top:14px">
+      <button class="btn btn-blue" id="lapPrev" onclick="lapGo(-1)">◀</button>
+      <span id="lapPageInfo" style="font-weight:800;font-size:13px;color:var(--muted)">—</span>
+      <button class="btn btn-blue" id="lapNext" onclick="lapGo(1)">▶</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🧾 Tagihan &amp; Pembayaran</div>
+    <div id="invoiceList"><div class="empty-state">Memuat...</div></div>
+    <input type="file" id="buktiFile" accept="image/*" style="display:none" onchange="uploadBuktiFile()">
+  </div>
+
+  <div class="tagline">☆ Belajar dengan semangat bersama <span class="pk">AIDA BIMBEL</span> ☆</div>
+</main>
+
+<div id="toast">—</div>
+
+<script src="api.js"></script>
+<script>
+let anakList = [], anak = null, uploadInvoiceId = null, progFilter = '', laporanCache = [];
+let lapPage = 1;
+const LAP_PER_PAGE = 10;
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const saved = sessionStorage.getItem('aida_ortu');
+  if (saved) {
+    try {
+      const { phone } = JSON.parse(saved);
+      document.getElementById('loginPhone').value = phone;
+      await doLogin(true);
+    } catch (e) { sessionStorage.removeItem('aida_ortu'); }
+  }
+});
+
+async function doLogin(silent) {
+  const phone = document.getElementById('loginPhone').value.trim();
+  const err = document.getElementById('loginErr');
+  err.style.display = 'none';
+  if (!phone) { err.textContent = 'Isi nomor HP dulu ya 😊'; err.style.display = 'block'; return; }
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = '⏳ Memeriksa...';
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  try {
+    anakList = await API.loginOrtu(phone);
+    sessionStorage.setItem('aida_ortu', JSON.stringify({ phone }));
+    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'block';
+    document.getElementById('logoutBtn').style.display = 'inline-block';
+    document.getElementById('heroSub').textContent = 'Pantau perkembangan belajar, sesi, dan pembayaran di sini';
+    renderAnakChips();
+    pilihAnak(anakList[0].id);
+  } catch (e) {
+    sessionStorage.removeItem('aida_ortu');
+    if (!silent) { err.textContent = e.message; err.style.display = 'block'; }
+  } finally {
+    btn.disabled = false; btn.textContent = '✨ Masuk';
+    document.getElementById('loadingOverlay').style.display = 'none';
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('aida_ortu');
+  location.reload();
+}
+
+function renderAnakChips() {
+  const box = document.getElementById('anakChips');
+  box.innerHTML = anakList.length > 1
+    ? anakList.map(a => `<button class="anak-chip" id="chip-${a.id}" onclick="pilihAnak('${a.id}')">${a.nama}</button>`).join('')
+    : '';
+}
+
+function pilihAnak(id) {
+  anak = anakList.find(a => a.id === id);
+  if (!anak) return;
+  document.querySelectorAll('.anak-chip').forEach(c => c.classList.toggle('active', c.id === 'chip-' + id));
+  document.getElementById('heroTitle').innerHTML = `Halo, Parents of <span class="hl">${anak.nama}</span> 👋`;
+  progFilter = '';
+  lapPage = 1;
+  renderKelas();
+  loadLaporan();
+  loadInvoice();
+}
+
+async function renderKelas() {
+  const box = document.getElementById('kelasList');
+  box.innerHTML = '<div class="empty-state">Memuat...</div>';
+  try {
+    const sesiAll = await API.getSesiAllKelas();
+    const kelas = anak.kelas || [];
+    if (!kelas.length) { box.innerHTML = '<div class="empty-state">Belum ada kelas terdaftar</div>'; return; }
+    box.innerHTML = kelas.map(k => {
+      const s = sesiAll.find(x => x.kelas_id === k.id);
+      const sesi = s ? s.sesi : 0, kuota = s ? s.kuota : (Number(k.sesi_kuota) || 8);
+      const pct = Math.min(100, Math.round(sesi / (kuota || 1) * 100));
+      return `<div class="kelas-item">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="badge prog-${k.program}">${k.program}</span>
+          <span class="badge bg-pink">${k.tipe}</span>
+          <span style="font-size:12px;color:var(--muted);font-weight:700">${k.jadwal || ''}</span>
+          <span style="margin-left:auto;font-weight:900;font-size:13px">${sesi} / ${kuota} sesi</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+        <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:4px">Guru: ${k.nama_guru || '—'}${sesi >= kuota ? ' · <strong style="color:#C0564F">kuota terpenuhi</strong>' : ''}</div>
+      </div>`;
+    }).join('');
+  } catch (e) { box.innerHTML = '<div class="empty-state">Gagal memuat sesi</div>'; }
+}
+
+async function loadLaporan() {
+  const box = document.getElementById('laporanList');
+  box.innerHTML = '<div class="empty-state">Memuat...</div>';
+  try {
+    const rows = await API.getLaporan({ murid_id: anak.id });
+    laporanCache = rows.filter(r => r.status !== 'pending'); // hanya yang sudah dicek admin
+    const progs = [...new Set(laporanCache.map(r => r.program).filter(Boolean))];
+    const chips = document.getElementById('progChips');
+    if (progs.length > 1) {
+      chips.style.display = 'flex';
+      chips.innerHTML = `<button class="prog-chip ${!progFilter ? 'active' : ''}" onclick="setProgFilter('')">Semua</button>` +
+        progs.map(p => `<button class="prog-chip ${progFilter === p ? 'active' : ''}" onclick="setProgFilter('${p}')">${p}</button>`).join('');
+    } else chips.style.display = 'none';
+    renderLaporan();
+  } catch (e) { box.innerHTML = '<div class="empty-state">Gagal memuat laporan</div>'; }
+}
+
+function setProgFilter(p) { progFilter = p; lapPage = 1; loadLaporan(); }
+
+function lapGo(d) {
+  const rows = progFilter ? laporanCache.filter(r => r.program === progFilter) : laporanCache;
+  const total = Math.max(1, Math.ceil(rows.length / LAP_PER_PAGE));
+  lapPage = Math.min(total, Math.max(1, lapPage + d));
+  renderLaporan();
+}
+
+function renderLaporan() {
+  const box = document.getElementById('laporanList');
+  const pager = document.getElementById('lapPager');
+  const rows = progFilter ? laporanCache.filter(r => r.program === progFilter) : laporanCache;
+  if (!rows.length) { box.innerHTML = '<div class="empty-state">Belum ada laporan ✦</div>'; pager.style.display = 'none'; return; }
+  const totalPages = Math.ceil(rows.length / LAP_PER_PAGE);
+  if (lapPage > totalPages) lapPage = totalPages;
+  const start = (lapPage - 1) * LAP_PER_PAGE;
+  pager.style.display = totalPages > 1 ? 'flex' : 'none';
+  document.getElementById('lapPageInfo').textContent = `Hal. ${lapPage} / ${totalPages} · ${rows.length} laporan`;
+  document.getElementById('lapPrev').disabled = lapPage <= 1;
+  document.getElementById('lapNext').disabled = lapPage >= totalPages;
+  box.innerHTML = rows.slice(start, start + LAP_PER_PAGE).map(r => {
+    const materi = LU.parseMateri(r.materi_json);
+    const first = materi[0] ? materi[0].m : '—';
+    return `<div class="history-item">
+      <div class="hi-head" onclick="this.nextElementSibling.classList.toggle('open')">
+        <div style="flex:1">
+          <div style="font-weight:800;font-size:13px">${LU.fmtDate(r.tanggal)} · ${r.program || ''} <span style="font-size:11px;color:var(--muted)">(${r.nama_guru || '—'})</span></div>
+          <div style="font-size:12px;color:var(--muted)">${first.slice(0, 60)}${first.length > 60 ? '...' : ''}</div>
+        </div>
+        <span style="color:var(--muted)">▼</span>
+      </div>
+      <div class="hi-body">
+        ${materi.map(x => `<div>• ${x.m} <span class="stars">${LU.stars(x.s)}</span></div>`).join('') || '—'}
+        ${r.catatan ? `<div style="margin-top:8px"><strong>Teacher's Note:</strong> ${r.catatan}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadInvoice() {
+  const box = document.getElementById('invoiceList');
+  box.innerHTML = '<div class="empty-state">Memuat...</div>';
+  try {
+    const rows = await API.getInvoice({ murid_id: anak.id });
+    if (!rows.length) { box.innerHTML = '<div class="empty-state">Belum ada tagihan ✦</div>'; return; }
+    box.innerHTML = rows.map(r => `
+      <div class="inv-item">
+        <div style="flex:1;min-width:140px">
+          <div style="font-weight:900;font-size:14px">${LU.bulanID(r.bulan)}</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:700">${r.program_label || ''} · ${r.sesi} sesi</div>
+        </div>
+        <div style="font-weight:900;font-size:14px">${LU.rp(r.nominal)}</div>
+        <span class="badge ${r.status === 'lunas' ? 'bg-mint' : 'bg-red'}">${r.status === 'lunas' ? '✅ Lunas' : '⏳ Belum bayar'}</span>
+        ${r.status !== 'lunas' ? `<button class="btn btn-primary" onclick="pilihBukti('${r.id}')">📤 Upload Bukti</button>` : ''}
+        ${r.bukti_url ? `<a class="btn btn-blue" href="${r.bukti_url}" target="_blank">🧾 Bukti</a>` : ''}
+      </div>`).join('') +
+      `<div style="font-size:12px;color:var(--muted);font-weight:700;margin-top:6px">Pembayaran: ${LU.BANK} · mohon konfirmasi setelah transfer ya 🙏</div>`;
+  } catch (e) { box.innerHTML = '<div class="empty-state">Gagal memuat tagihan</div>'; }
+}
+
+function pilihBukti(invoiceId) {
+  uploadInvoiceId = invoiceId;
+  document.getElementById('buktiFile').click();
+}
+
+async function uploadBuktiFile() {
+  const file = document.getElementById('buktiFile').files[0];
+  if (!file || !uploadInvoiceId) return;
+  if (file.size > 4 * 1024 * 1024) { showToast('File terlalu besar (maks 4MB) — coba foto ulang/kompres ya', 'error'); return; }
+  showToast('Mengupload bukti... ⏳');
+  try {
+    await API.uploadBukti(uploadInvoiceId, anak.id, '', file);
+    showToast('Bukti terkirim! Terima kasih 🙏', 'success');
+    loadInvoice();
+  } catch (e) { showToast('Gagal upload: ' + e.message, 'error'); }
+  document.getElementById('buktiFile').value = '';
+}
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + (type || '');
+  setTimeout(() => t.className = '', 3500);
+}
+</script>
+</body>
+</html>
