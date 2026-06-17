@@ -113,6 +113,34 @@ main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
 #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 #toast.success{background:var(--green)}
 #toast.error{background:var(--red)}
+
+/* KEHADIRAN TOGGLE */
+.kehadiran-wrap{display:flex;gap:8px;margin-top:4px}
+.kehadiran-btn{flex:1;padding:10px;border-radius:12px;border:2px solid var(--border);background:var(--white);font-size:13px;font-weight:800;cursor:pointer;transition:all .18s;text-align:center}
+.kehadiran-btn.hadir.active{background:var(--green);border-color:var(--green);color:#fff}
+.kehadiran-btn.alpha.active{background:#f59e0b;border-color:#f59e0b;color:#fff}
+
+/* PROGRESS SESI */
+.sesi-progress{margin-top:12px;display:none}
+.sesi-prog-label{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:5px}
+.sesi-prog-bar{background:var(--pink-soft);border-radius:999px;height:10px;overflow:hidden}
+.sesi-prog-fill{background:var(--green);height:100%;border-radius:999px;transition:width .5s}
+.sesi-prog-fill.full{background:#ef4444}
+
+/* EXTRA FIELDS (b–e) */
+.extra-fields{margin-top:16px;border-top:1.5px dashed var(--border);padding-top:16px;display:flex;flex-direction:column;gap:12px}
+
+/* FOTO KBM */
+.foto-upload-area{border:2px dashed var(--blue);border-radius:14px;padding:14px;text-align:center;cursor:pointer;background:var(--blue-soft);transition:background .18s}
+.foto-upload-area:hover{background:#dbeafe}
+.foto-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.foto-thumb{width:76px;height:76px;border-radius:10px;object-fit:cover;border:2px solid var(--border);position:relative;cursor:pointer}
+
+/* TTD SIGNATURE PAD */
+.ttd-wrap{margin-top:16px;border-top:1.5px dashed var(--border);padding-top:16px}
+.ttd-canvas-wrap{border:2px dashed var(--pink-dark);border-radius:14px;background:#fff;overflow:hidden;touch-action:none;position:relative}
+#ttdCanvas{display:block;width:100%;height:130px;cursor:crosshair}
+.ttd-placeholder{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;font-weight:700;color:var(--muted);pointer-events:none;text-align:center;line-height:1.5}
 </style>
 </head>
 <body>
@@ -185,8 +213,22 @@ main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
         <label>Tanggal Sesi</label>
         <input type="date" id="tglSesi" onchange="updateWA()">
       </div>
+      <div class="form-field">
+        <label>Status Kehadiran</label>
+        <div class="kehadiran-wrap">
+          <button type="button" class="kehadiran-btn hadir active" id="btnHadir" onclick="setKehadiran('hadir')">✅ Hadir</button>
+          <button type="button" class="kehadiran-btn alpha" id="btnAlpha" onclick="setKehadiran('alpha')">⚠️ Alpha</button>
+        </div>
+      </div>
     </div>
     <div class="kuota-pill" id="kuotaPill"></div>
+    <div class="sesi-progress" id="sesiProgress">
+      <div class="sesi-prog-label">
+        <span>Progres sesi paket ini</span>
+        <span id="sesiProgLabel">—</span>
+      </div>
+      <div class="sesi-prog-bar"><div class="sesi-prog-fill" id="sesiProgFill" style="width:0%"></div></div>
+    </div>
   </div>
 
   <!-- MATERI + BINTANG -->
@@ -198,6 +240,48 @@ main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
     <div class="form-field" style="margin-top:14px">
       <label>Teacher's Note (untuk orang tua)</label>
       <textarea id="catatanInput" placeholder="Contoh: Mohon diulang membaca di rumah ya..." oninput="updateWA()"></textarea>
+    </div>
+
+    <div class="extra-fields">
+      <div class="form-field">
+        <label>📖 Rincian yang Dipelajari</label>
+        <textarea id="rincianInput" placeholder="Jelaskan rincian materi yang dibahas hari ini..."></textarea>
+      </div>
+      <div class="form-field">
+        <label>🏆 Prestasi Siswa</label>
+        <textarea id="prestasiInput" placeholder="Pencapaian atau perkembangan positif siswa..."></textarea>
+      </div>
+      <div class="form-field">
+        <label>⚡ Kendala, Evaluasi &amp; Solusi</label>
+        <textarea id="kendalaInput" placeholder="Kendala yang dihadapi dan solusi yang diberikan..."></textarea>
+      </div>
+      <div class="form-field">
+        <label>📅 Rencana Pertemuan Selanjutnya</label>
+        <textarea id="rencanInput" placeholder="Materi atau target yang akan dibahas di sesi berikutnya..."></textarea>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:800;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">📸 Foto KBM (opsional)</label>
+        <div class="foto-upload-area" onclick="document.getElementById('fotoKBM').click()">
+          <div style="font-size:22px;margin-bottom:2px">📷</div>
+          <div style="font-size:12px;font-weight:800;color:var(--blue-ink)">Klik untuk upload foto kegiatan</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Max 4MB per foto · bisa pilih beberapa</div>
+        </div>
+        <input type="file" id="fotoKBM" accept="image/*" multiple style="display:none" onchange="previewFoto(this)">
+        <div class="foto-preview" id="fotoPreview"></div>
+      </div>
+
+      <!-- TTD -->
+      <div class="ttd-wrap">
+        <label style="font-size:11px;font-weight:800;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">✍️ Tanda Tangan Siswa / Ortu (opsional)</label>
+        <div class="ttd-canvas-wrap">
+          <canvas id="ttdCanvas" width="700" height="130"></canvas>
+          <div class="ttd-placeholder" id="ttdPlaceholder">Tanda tangan di sini<br><span style="font-size:10px;opacity:.7">sentuh atau geser mouse untuk TTD</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="ttdClear()">🗑️ Hapus</button>
+          <span id="ttdStatus" style="font-size:11px;font-weight:700;color:var(--muted)">— belum ada TTD —</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -227,7 +311,7 @@ main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
 
   <div class="saved-banner" id="savedBanner">
     <span style="font-size:22px">✅</span>
-    <span>Laporan tersimpan &amp; absensi otomatis tercatat hadir! Laporan menunggu pengecekan admin sebelum dikirim ke ortu ⏳</span>
+    <span id="savedBannerText">Laporan tersimpan! Absensi tercatat otomatis. Menunggu pengecekan admin sebelum dikirim ke ortu ⏳</span>
   </div>
 
   <div id="step1Btns">
@@ -244,6 +328,114 @@ main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
 <script>
 let guruData = [], kelasData = [], muridData = [], sesiData = [];
 let currentGuru = null;
+let kehadiranState = 'hadir';
+let fotoFiles = [];
+let ttdDrawing = false, ttdHasData = false;
+
+// ── TTD SIGNATURE PAD ────────────────────────────────────────
+function ttdInit() {
+  const canvas = document.getElementById('ttdCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#1e293b';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const src = e.touches ? e.touches[0] : e;
+    return { x: (src.clientX - rect.left) * scaleX, y: (src.clientY - rect.top) * scaleY };
+  }
+  function start(e) {
+    e.preventDefault();
+    ttdDrawing = true;
+    const p = getPos(e);
+    ctx.beginPath(); ctx.moveTo(p.x, p.y);
+  }
+  function move(e) {
+    if (!ttdDrawing) return;
+    e.preventDefault();
+    const p = getPos(e);
+    ctx.lineTo(p.x, p.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p.x, p.y);
+    if (!ttdHasData) {
+      ttdHasData = true;
+      document.getElementById('ttdPlaceholder').style.display = 'none';
+      document.getElementById('ttdStatus').textContent = '✅ TTD tersimpan';
+    }
+  }
+  function end() { ttdDrawing = false; }
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  canvas.addEventListener('mouseup', end);
+  canvas.addEventListener('mouseleave', end);
+  canvas.addEventListener('touchstart', start, { passive: false });
+  canvas.addEventListener('touchmove', move, { passive: false });
+  canvas.addEventListener('touchend', end);
+}
+
+function ttdClear() {
+  const canvas = document.getElementById('ttdCanvas');
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  ttdHasData = false;
+  document.getElementById('ttdPlaceholder').style.display = 'block';
+  document.getElementById('ttdStatus').textContent = '— belum ada TTD —';
+}
+
+function ttdGetBase64() {
+  if (!ttdHasData) return '';
+  return document.getElementById('ttdCanvas').toDataURL('image/png');
+}
+
+// Kompres foto ke base64 (maks 400px, quality 0.6 agar < 50K chars)
+function compressFoto(file, maxPx = 400, q = 0.6) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, maxPx / img.width, maxPx / img.height);
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL('image/jpeg', q));
+    };
+    img.onerror = () => resolve('');
+    img.src = url;
+  });
+}
+
+function setKehadiran(val) {
+  kehadiranState = val;
+  document.getElementById('btnHadir').classList.toggle('active', val === 'hadir');
+  document.getElementById('btnAlpha').classList.toggle('active', val === 'alpha');
+}
+
+function previewFoto(input) {
+  fotoFiles = [...input.files];
+  const box = document.getElementById('fotoPreview');
+  box.innerHTML = fotoFiles.map((f, i) => {
+    const url = URL.createObjectURL(f);
+    return `<img src="${url}" class="foto-thumb" title="${f.name}" onclick="removeFoto(${i})">`;
+  }).join('');
+  if (fotoFiles.length) showToast(`${fotoFiles.length} foto dipilih ✦`, 'success');
+}
+
+function removeFoto(idx) {
+  fotoFiles.splice(idx, 1);
+  // rebuild preview
+  const box = document.getElementById('fotoPreview');
+  box.innerHTML = fotoFiles.map((f, i) => {
+    const url = URL.createObjectURL(f);
+    return `<img src="${url}" class="foto-thumb" title="${f.name}" onclick="removeFoto(${i})">`;
+  }).join('');
+}
 
 // ── LOGIN GURU (no. HP) ─────────────────────────────────────
 async function guruLogin() {
@@ -307,6 +499,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     today.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
   addMateriRow();
+  ttdInit();
 
   // Auto-login kalau pernah login di sesi ini
   const savedPhone = sessionStorage.getItem('aida_guru');
@@ -339,6 +532,7 @@ function onGuruChange() {
   sel.innerHTML = '<option value="">Pilih Murid / Kelas...</option>' +
     list.map(k => `<option value="${k.id}">${k.nama_murid} · ${k.program} (${k.tipe})${gid ? '' : ' — ' + (k.nama_guru || '')}</option>`).join('');
   document.getElementById('kuotaPill').style.display = 'none';
+  document.getElementById('sesiProgress').style.display = 'none';
   document.getElementById('historyCard').style.display = 'none';
   updateWA();
 }
@@ -351,17 +545,25 @@ function currentKelas() {
 async function onKelasChange() {
   const k = currentKelas();
   const pill = document.getElementById('kuotaPill');
+  const prog = document.getElementById('sesiProgress');
   document.getElementById('historyCard').style.display = k ? 'block' : 'none';
   if (k) {
     const s = sesiData.find(x => x.kelas_id === k.id);
     if (s) {
       const full = s.sesi >= s.kuota;
+      const pct = Math.min(100, Math.round(s.sesi / (s.kuota || 1) * 100));
       pill.className = 'kuota-pill' + (full ? ' full' : '');
       pill.style.display = 'block';
       pill.textContent = (full ? '⚠️ Kuota terpenuhi — ' : '✅ ') +
         `Sesi berjalan: ${s.sesi} / ${s.kuota}` + (full ? ' (waktunya invoice!)' : '');
-    } else pill.style.display = 'none';
-  } else pill.style.display = 'none';
+      // progress bar
+      prog.style.display = 'block';
+      document.getElementById('sesiProgLabel').textContent = `${s.sesi} / ${s.kuota} sesi (${pct}%)`;
+      const fill = document.getElementById('sesiProgFill');
+      fill.style.width = pct + '%';
+      fill.className = 'sesi-prog-fill' + (full ? ' full' : '');
+    } else { pill.style.display = 'none'; prog.style.display = 'none'; }
+  } else { pill.style.display = 'none'; prog.style.display = 'none'; }
 
   updateWA();
   if (!k) return;
@@ -471,6 +673,18 @@ async function saveReport() {
   btn.disabled = true;
 
   try {
+    const extra = {
+      rincian:  document.getElementById('rincianInput').value.trim(),
+      prestasi: document.getElementById('prestasiInput').value.trim(),
+      kendala:  document.getElementById('kendalaInput').value.trim(),
+      rencana:  document.getElementById('rencanInput').value.trim(),
+    };
+    // Kompres foto pertama (opsional)
+    let fotoBase64 = '';
+    if (fotoFiles.length > 0) {
+      try { fotoBase64 = await compressFoto(fotoFiles[0]); } catch {}
+    }
+    const ttdBase64 = ttdGetBase64();
     await API.addLaporan({
       kelas_id: k.id,
       murid_id: k.murid_id,
@@ -479,8 +693,16 @@ async function saveReport() {
       program: k.program,
       materi,
       catatan: document.getElementById('catatanInput').value,
+      kehadiran: kehadiranState,
+      extra: JSON.stringify(extra),
+      foto: fotoBase64,
+      ttd: ttdBase64,
       auto_absen: true,
     });
+    document.getElementById('savedBannerText').textContent =
+      kehadiranState === 'alpha'
+        ? 'Laporan tersimpan! Kehadiran tercatat Alpha ⚠️ Menunggu pengecekan admin ⏳'
+        : 'Laporan tersimpan! Absensi tercatat Hadir ✅ Menunggu pengecekan admin ⏳';
 
     document.getElementById('s1').className = 'step-dot done';
     document.getElementById('s1').textContent = '✓';
@@ -507,10 +729,20 @@ function resetForm() {
     .forEach(el => el.disabled = false);
   document.getElementById('kelasSelect').value = '';
   document.getElementById('catatanInput').value = '';
+  document.getElementById('rincianInput').value = '';
+  document.getElementById('prestasiInput').value = '';
+  document.getElementById('kendalaInput').value = '';
+  document.getElementById('rencanInput').value = '';
+  document.getElementById('fotoPreview').innerHTML = '';
+  document.getElementById('fotoKBM').value = '';
+  fotoFiles = [];
+  ttdClear();
   document.getElementById('materiList').innerHTML = '';
   addMateriRow();
   document.getElementById('kuotaPill').style.display = 'none';
+  document.getElementById('sesiProgress').style.display = 'none';
   document.getElementById('historyCard').style.display = 'none';
+  setKehadiran('hadir');
   document.getElementById('savedBanner').style.display = 'none';
   document.getElementById('step1Btns').style.display = 'block';
   document.getElementById('step2Btns').style.display = 'none';

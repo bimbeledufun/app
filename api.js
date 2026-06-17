@@ -80,6 +80,10 @@ const API = {
   seed:  () => API.post({ action: 'seed' }),
   addColumn: (sheet, kolom, default_val) => API.post({ action: 'addColumn', sheet, kolom, default_val }),
   migrate: () => API.post({ action: 'migrate' }),
+
+  // SETTINGS
+  getSettings:  ()  => API.post({ action: 'getSettings' }),
+  saveSettings: (d) => API.post({ action: 'saveSettings', ...d }),
 };
 
 // ── Util bersama ────────────────────────────────────────────

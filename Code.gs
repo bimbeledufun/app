@@ -144,6 +144,9 @@ function doPost(e) {
       case 'updateInvoiceNominal': return ok(updateInvoiceNominal(p.id, p.sesi, p.rate, p.nominal));
       case 'deleteInvoice':        return ok(deleteInvoice(p.id));
       case 'uploadBukti':          return ok(uploadBukti(p));
+      // SETTINGS
+      case 'getSettings':          return ok(getSettings());
+      case 'saveSettings':         return ok(saveSettings(p));
       default:                     return err('Unknown action: ' + p.action);
     }
   } catch (ex) { return err(ex.message); }
@@ -156,7 +159,7 @@ const SCHEMAS = {
   'Murid':   ['id', 'nama', 'grade', 'kelas_sekolah', 'wa_ortu', 'wa_laporan', 'rate_invoice', 'pin', 'tgl_masuk', 'tgl_berhenti', 'aktif', 'link_id'],
   'Kelas':   ['id', 'murid_id', 'nama_murid', 'guru_id', 'nama_guru', 'program', 'tipe', 'jadwal', 'sesi_kuota', 'fee_guru', 'tgl_mulai_term', 'tgl_akhir_term', 'aktif'],
   'Guru':    ['id', 'nama', 'wa', 'default_fee', 'aktif'],
-  'Laporan': ['id', 'kelas_id', 'murid_id', 'nama_murid', 'guru_id', 'nama_guru', 'tanggal', 'program', 'materi_json', 'catatan', 'status', 'timestamp'],
+  'Laporan': ['id', 'kelas_id', 'murid_id', 'nama_murid', 'guru_id', 'nama_guru', 'tanggal', 'program', 'tipe', 'materi_json', 'catatan', 'kehadiran', 'extra', 'foto', 'ttd', 'status', 'timestamp'],
   'Absensi': ['id', 'kelas_id', 'murid_id', 'nama', 'tanggal', 'status', 'catatan'],
   'Invoice': ['id', 'murid_id', 'nama_murid', 'bulan', 'program_label', 'sesi', 'rate', 'nominal', 'status', 'tgl_kirim', 'bukti_url', 'catatan'],
   'Setting': ['key', 'value'],
@@ -466,15 +469,21 @@ function addLaporan(p) {
   set('nama_guru',  guru ? guru.nama : '');
   set('tanggal',    p.tanggal || '');
   set('program',    p.program || (kelas ? kelas.program : ''));
+  set('tipe',       p.tipe || (kelas ? kelas.tipe : ''));
   set('materi_json', typeof p.materi === 'string' ? p.materi : JSON.stringify(p.materi || []));
   set('catatan',    p.catatan || '');
+  set('kehadiran',  p.kehadiran || 'hadir');
+  set('extra',      typeof p.extra === 'string' ? p.extra : (p.extra ? JSON.stringify(p.extra) : ''));
+  set('foto',       p.foto || '');
+  set('ttd',        p.ttd  || '');
   set('status',     p.status || 'pending'); // menunggu approval admin sebelum dikirim ke ortu
   set('timestamp',  new Date().toISOString());
   sheet.appendRow(row);
 
-  // Auto-absen hadir untuk kelas & tanggal ini
+  // Auto-absen dengan status kehadiran dari guru (hadir atau alpha)
   if (p.auto_absen && p.kelas_id && p.tanggal) {
-    upsertAbsensi({ kelas_id: p.kelas_id, murid_id, nama: murid ? murid.nama : '', tanggal: p.tanggal, status: 'hadir', catatan: 'auto: laporan guru' });
+    const absenStatus = ['hadir', 'alpha'].includes(p.kehadiran) ? p.kehadiran : 'hadir';
+    upsertAbsensi({ kelas_id: p.kelas_id, murid_id, nama: murid ? murid.nama : '', tanggal: p.tanggal, status: absenStatus, catatan: 'auto: laporan guru' });
   }
   return { id };
 }
@@ -482,10 +491,14 @@ function addLaporan(p) {
 // Edit laporan (admin: koreksi typo/bahasa) & ubah status approval
 function updateLaporan(p) {
   return updateRowById('Laporan', p.id, {
-    tanggal: p.tanggal,
+    tanggal:   p.tanggal,
     materi_json: p.materi !== undefined ? (typeof p.materi === 'string' ? p.materi : JSON.stringify(p.materi)) : undefined,
-    catatan: p.catatan,
-    status: p.status,
+    catatan:   p.catatan,
+    kehadiran: p.kehadiran,
+    extra:     p.extra !== undefined ? (typeof p.extra === 'string' ? p.extra : JSON.stringify(p.extra)) : undefined,
+    foto:      p.foto  !== undefined ? p.foto  : undefined,
+    ttd:       p.ttd   !== undefined ? p.ttd   : undefined,
+    status:    p.status,
   });
 }
 
@@ -617,8 +630,9 @@ function getSesiAllKelas() {
 
   return kelas.map(k => {
     const since = sinceMap[k.murid_id] || null;
+    // Hadir dan Alpha sama-sama menghitung sesi (slot sudah dialokasikan)
     const sesi = absensi.filter(a => {
-      if (a.kelas_id !== k.id || a.status !== 'hadir') return false;
+      if (a.kelas_id !== k.id || !['hadir', 'alpha'].includes(a.status)) return false;
       if (since) return a.tanggal > since;
       return true;
     }).length;
@@ -761,4 +775,41 @@ function seedAida() {
   extraMurid.forEach(nama => { if (!muridIds[nama]) muridIds[nama] = addMurid({ nama }).id; });
 
   return { guru: guruNames.length, murid: Object.keys(muridIds).length, kelas: nKelas, note: 'Lengkapi rate invoice murid & fee guru per kelas di tab Admin.' };
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SETTINGS — key-value pairs di sheet Setting
+// ══════════════════════════════════════════════════════════════
+function getSettings() {
+  const rows = sheetToObjects(getSheet('Setting'));
+  const out = {};
+  rows.forEach(r => { if (r.key) out[String(r.key)] = String(r.value || ''); });
+  return out;
+}
+
+function saveSettings(p) {
+  const sheet   = getSheet('Setting');
+  const data    = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const keyIdx  = headers.indexOf('key');
+  const valIdx  = headers.indexOf('value');
+  if (keyIdx < 0 || valIdx < 0) throw new Error('Sheet Setting belum disetup — jalankan API.migrate() dahulu');
+
+  const allowed = ['nama', 'motto', 'logo', 'alamat', 'wa', 'ig', 'teksInvoice', 'teksLaporan'];
+  const results = [];
+  for (const key of allowed) {
+    if (p[key] === undefined) continue;
+    let found = false;
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][keyIdx] === key) {
+        sheet.getRange(i + 1, valIdx + 1).setValue(p[key]);
+        found = true; results.push('updated:' + key); break;
+      }
+    }
+    if (!found) {
+      appendByHeaders(sheet, { key, value: p[key] });
+      results.push('added:' + key);
+    }
+  }
+  return results;
 }
