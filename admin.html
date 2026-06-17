@@ -414,6 +414,8 @@ tr:hover td{background:#FFFAF8}
           <input id="setWA" placeholder="08..." inputmode="numeric"></div>
         <div class="form-field"><label>Instagram</label>
           <input id="setIG" placeholder="@aidabimbel"></div>
+        <div class="form-field" style="grid-column:1/-1"><label>Pilihan Program <span style="font-size:11px;font-weight:600;color:var(--muted)">(pisah koma — akan muncul di semua form program)</span></label>
+          <input id="setPrograms" placeholder="Tutor, Swim, Art, Mandarin"></div>
       </div>
     </div>
     <div class="card">
@@ -578,6 +580,7 @@ async function startApp(){
   document.getElementById('repDari').value = todayYM + '-01';
   document.getElementById('repSampai').value = todayStr;
   await refreshBaseData();
+  refreshProgramList(); // pakai settings lokal saat pertama buka
   loadDashboard();
 }
 
@@ -1391,8 +1394,10 @@ function applySettingsToForm(s){
   document.getElementById('setAlamat').value       = s.alamat       || '';
   document.getElementById('setWA').value           = s.wa           || '';
   document.getElementById('setIG').value           = s.ig           || '';
+  document.getElementById('setPrograms').value     = s.programs     || '';
   document.getElementById('setTeksInvoice').value  = s.teksInvoice  || '';
   document.getElementById('setTeksLaporan').value  = s.teksLaporan  || '';
+  refreshProgramList();
 }
 async function loadSettings(){
   // Coba dari server; fallback ke localStorage
@@ -1413,10 +1418,12 @@ async function saveSettings(){
     alamat:      document.getElementById('setAlamat').value.trim(),
     wa:          document.getElementById('setWA').value.trim(),
     ig:          document.getElementById('setIG').value.trim(),
+    programs:    document.getElementById('setPrograms').value.trim(),
     teksInvoice: document.getElementById('setTeksInvoice').value.trim(),
     teksLaporan: document.getElementById('setTeksLaporan').value.trim(),
   };
   localStorage.setItem('aida_settings', JSON.stringify(s)); // simpan lokal dulu
+  refreshProgramList(); // update datalist program langsung
   try{
     await API.saveSettings(s); // lalu kirim ke server
   }catch(e){
@@ -1427,6 +1434,11 @@ async function saveSettings(){
   note.style.display = 'block';
   showToast('Pengaturan tersimpan! ✦','success');
   setTimeout(()=>{ note.style.display='none'; }, 3000);
+}
+function refreshProgramList(){
+  const dl = document.getElementById('programList');
+  if(!dl) return;
+  dl.innerHTML = LU.getPrograms().map(p=>`<option value="${p}">`).join('');
 }
 
 // ── FEE GURU PAYMENT STATUS ──────────────────────────────────

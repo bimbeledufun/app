@@ -795,7 +795,7 @@ function saveSettings(p) {
   const valIdx  = headers.indexOf('value');
   if (keyIdx < 0 || valIdx < 0) throw new Error('Sheet Setting belum disetup — jalankan API.migrate() dahulu');
 
-  const allowed = ['nama', 'motto', 'logo', 'alamat', 'wa', 'ig', 'teksInvoice', 'teksLaporan'];
+  const allowed = ['nama', 'motto', 'logo', 'alamat', 'wa', 'ig', 'programs', 'teksInvoice', 'teksLaporan'];
   const results = [];
   for (const key of allowed) {
     if (p[key] === undefined) continue;

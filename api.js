@@ -89,6 +89,13 @@ const API = {
 // ── Util bersama ────────────────────────────────────────────
 const LU = {
   PROGRAMS: ['Tutor', 'Swim', 'Art', 'Mandarin'],
+  getPrograms() {
+    try {
+      const s = JSON.parse(localStorage.getItem('aida_settings') || '{}');
+      if (s.programs) return s.programs.split(',').map(p => p.trim()).filter(Boolean);
+    } catch {}
+    return this.PROGRAMS;
+  },
   TIPE: ['Private', 'Semi Private', 'Home Service'],
   GRADES: ['Growing', 'Improving', 'Advanced'],
   BANK: 'BCA 2881889996 a.n. Clara E',
