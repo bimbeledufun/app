@@ -3,7 +3,7 @@
 //  Ganti SCRIPT_URL dengan URL deployment Apps Script kamu (/exec)
 // ============================================================
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQj-Gwe8aAGusSubJyi_XIK6bsN4-KxtYL__5e1s8TxbPVvsdShNmbhZh5REtv1Eh60w/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx99g9vHa892cH3Cb16tzUaQCbEO6S6AW1f1lkbiEgHJhgANE_TlsmlcpcIYCOn6bsK/exec';
 
 const API = {
   async post(payload) {

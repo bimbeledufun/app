@@ -403,7 +403,8 @@ tr:hover td{background:#FFFAF8}
     <div style="font-weight:800;font-size:13px;margin-bottom:8px;color:var(--pink-ink)" id="kelasFormMode">➕ Tambah Kelas</div>
     <div class="form-grid">
       <div class="form-field"><label>Program</label>
-        <select id="kProgram"><option>Tutor</option><option>Swim</option><option>Art</option><option>Mandarin</option></select></div>
+        <input id="kProgram" list="programList" placeholder="Pilih atau ketik sendiri..." autocomplete="off">
+        <datalist id="programList"><option value="Tutor"><option value="Swim"><option value="Art"><option value="Mandarin"></datalist></div>
       <div class="form-field"><label>Tipe</label>
         <select id="kTipe"><option>Private</option><option>Semi Private</option><option>Home Service</option></select></div>
       <div class="form-field"><label>Guru</label><select id="kGuru"></select></div>
