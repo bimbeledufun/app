@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Tutor – AIDA BIMBEL</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pink:#86efac;--pink-soft:#dcfce7;--pink-dark:#16a34a;--pink-ink:#166534;
+  --blue:#93c5fd;--blue-soft:#eff6ff;--blue-dark:#3b82f6;--blue-ink:#1d4ed8;
+  --mint:#6ee7b7;--mint-soft:#ecfdf5;--lilac:#c4b5fd;--lilac-soft:#f5f3ff;
+  --yellow:#fcd34d;--cream:#f8fafc;--white:#FFFFFF;
+  --ink:#334155;--ink-strong:#1e293b;--muted:#94a3b8;--border:#e2e8f0;
+  --green:#16a34a;--red:#ef4444;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--ink-strong);min-height:100vh}
+input,select,textarea,button{font-family:'Nunito',sans-serif}
+h1,h2,.title-font{font-family:'Baloo 2',cursive}
+
+.app-header{background:#15803d;height:62px;display:flex;align-items:center;padding:0 20px;gap:12px;position:sticky;top:0;z-index:100}
+.logo-img-sm{width:42px;height:42px;border-radius:12px;object-fit:contain;flex-shrink:0;background:rgba(255,255,255,.15);padding:3px}
+.app-title{font-size:18px;font-weight:800;color:#ffffff;line-height:1}
+.app-sub{font-size:11px;color:rgba(255,255,255,.75);font-weight:600;margin-top:2px}
+.header-badge{margin-left:auto;background:rgba(255,255,255,.15);color:#ffffff;padding:5px 14px;border-radius:999px;font-size:11px;font-weight:800;border:1.5px solid rgba(255,255,255,.3)}
+
+.hero{padding:30px 20px 36px;text-align:center;position:relative;overflow:hidden}
+.hero h1{font-size:26px;color:var(--ink-strong);margin-bottom:6px}
+.hero h1 .hl{color:var(--pink-ink)}
+.hero p{font-size:13px;color:var(--muted);font-weight:600}
+.hero-date{display:inline-block;background:var(--white);border:2px dashed var(--blue);border-radius:999px;padding:6px 16px;font-size:12px;font-weight:800;color:var(--blue-ink);margin-top:12px}
+.cloud{position:absolute;background:var(--white);border-radius:999px;opacity:.85;box-shadow:0 4px 16px rgba(167,199,231,.25)}
+.cloud::before,.cloud::after{content:'';position:absolute;background:inherit;border-radius:50%}
+.cloud.c1{width:90px;height:32px;top:18px;left:6%}
+.cloud.c1::before{width:38px;height:38px;top:-16px;left:14px}
+.cloud.c1::after{width:26px;height:26px;top:-10px;left:46px}
+.cloud.c2{width:70px;height:26px;top:60px;right:8%}
+.cloud.c2::before{width:30px;height:30px;top:-13px;left:10px}
+.cloud.c2::after{width:20px;height:20px;top:-8px;left:36px}
+.spark{position:absolute;color:var(--pink);font-size:15px;animation:tw 2.4s ease-in-out infinite}
+.spark.s2{color:var(--blue);animation-delay:.7s}
+.spark.s3{color:var(--yellow);font-size:18px;animation-delay:1.3s}
+@keyframes tw{0%,100%{opacity:.25;transform:scale(.85)}50%{opacity:1;transform:scale(1.12)}}
+
+#loadingOverlay{position:fixed;inset:0;background:rgba(255,251,247,.92);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.spinner{width:40px;height:40px;border:4px solid var(--pink-soft);border-top-color:var(--pink-dark);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loadingOverlay p{color:var(--pink-ink);font-weight:800;font-size:14px}
+
+main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
+.card{background:var(--white);border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 3px 16px rgba(232,145,165,.10);border:1.5px solid var(--border)}
+.card-title{font-family:'Baloo 2',cursive;font-weight:800;font-size:16px;margin-bottom:16px;display:flex;align-items:center;gap:8px;color:var(--ink-strong)}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:480px){.form-row{grid-template-columns:1fr}}
+.form-field label{font-size:11px;font-weight:800;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.form-field select,.form-field input,.form-field textarea{width:100%;padding:11px 13px;border:2px solid var(--border);border-radius:13px;font-size:14px;font-weight:700;color:var(--ink-strong);outline:none;background:var(--white);transition:border-color .2s}
+.form-field select:focus,.form-field input:focus,.form-field textarea:focus{border-color:var(--pink-dark)}
+.form-field textarea{resize:vertical;min-height:80px}
+
+.kuota-pill{display:none;margin-top:10px;background:var(--mint-soft);border:1.5px solid var(--mint);border-radius:12px;padding:9px 14px;font-size:13px;font-weight:800;color:#3E8A65}
+.kuota-pill.full{background:#FDEEEE;border-color:#F5C2C2;color:#C0564F}
+
+/* MATERI ROWS */
+.materi-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:10px;background:var(--blue-soft);border:1.5px dashed var(--blue);border-radius:14px;padding:10px}
+.materi-row input{flex:1;padding:9px 12px;border:2px solid transparent;border-radius:10px;font-size:13px;font-weight:700;color:var(--ink-strong);outline:none;background:var(--white)}
+.materi-row input:focus{border-color:var(--blue-dark)}
+.star-pick{display:flex;gap:2px;align-items:center;padding-top:6px}
+.star-btn{background:none;border:none;font-size:20px;cursor:pointer;color:#D8D2E0;transition:transform .12s,color .12s;padding:0 1px;line-height:1}
+.star-btn.on{color:#FFB95E}
+.star-btn:hover{transform:scale(1.2)}
+.del-materi{background:none;border:none;font-size:15px;cursor:pointer;color:var(--muted);padding:8px 4px 0}
+.del-materi:hover{color:var(--red)}
+.add-materi{width:100%;background:var(--white);border:2px dashed var(--pink);color:var(--pink-ink);border-radius:13px;padding:11px;font-size:13px;font-weight:800;cursor:pointer;transition:background .2s}
+.add-materi:hover{background:var(--pink-soft)}
+.star-hint{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:10px}
+
+/* WA PREVIEW */
+.wa-preview{background:#0B141A;border-radius:16px;padding:16px;font-size:13px;color:#e9edef;line-height:1.7;border:1px solid #1F2C34;margin-top:6px}
+.wa-bubble{background:#005C4B;border-radius:12px 12px 12px 0;padding:12px 14px;display:inline-block;max-width:92%;white-space:pre-wrap;font-size:13px;line-height:1.7;color:#e9edef}
+.wa-sender{font-size:11px;color:#25D366;font-weight:700;margin-bottom:4px}
+.wa-time{font-size:10px;color:#8696a0;margin-top:4px;text-align:right}
+.traffic{display:flex;gap:6px;margin-bottom:12px}
+.dot{width:11px;height:11px;border-radius:50%}
+
+.history-item{border:1.5px solid var(--border);border-radius:14px;margin-bottom:8px;overflow:hidden}
+.hi-head{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;background:var(--white)}
+.hi-head:hover{background:var(--pink-soft)}
+.hi-body{display:none;padding:10px 14px;border-top:1.5px dashed var(--border);font-size:13px;line-height:1.7;color:var(--ink)}
+.hi-body.open{display:block}
+.hi-star{color:#FFB95E;letter-spacing:1px}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:12px 20px;border-radius:14px;font-size:14px;font-weight:800;border:none;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--green);color:#fff;box-shadow:0 4px 12px rgba(22,163,74,.3)}
+.btn-primary:hover{background:#15803d;transform:translateY(-1px)}
+.btn-blue{background:var(--blue-soft);color:var(--blue-ink);border:1.5px solid var(--blue)}.btn-blue:hover{background:var(--blue);color:#fff}
+.btn-dark{background:var(--ink-strong);color:#fff}.btn-dark:hover{background:var(--ink)}
+.btn-full{width:100%;justify-content:center;padding:14px}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap}
+
+.saved-banner{background:var(--mint-soft);border:2px dashed var(--mint);border-radius:16px;padding:14px 18px;display:none;margin-bottom:14px;align-items:center;gap:12px;font-weight:800;color:#3E8A65}
+.empty-state{text-align:center;padding:24px;color:var(--muted);font-size:13px;font-weight:600}
+
+.step-bar{display:flex;align-items:center;gap:0;margin-bottom:20px}
+.step-dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);background:var(--white);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--muted);flex-shrink:0;transition:all .3s}
+.step-dot.active{background:var(--pink-dark);border-color:var(--pink-dark);color:#fff}
+.step-dot.done{background:var(--green);border-color:var(--green);color:#fff}
+.step-line{flex:1;height:2px;background:var(--border);min-width:24px;transition:background .3s}
+.step-line.done{background:var(--green)}
+
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(40px);background:var(--ink-strong);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;font-weight:800;z-index:9999;transition:all .3s;white-space:nowrap;opacity:0}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+#toast.success{background:var(--green)}
+#toast.error{background:var(--red)}
+</style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <p>Memuat data...</p>
+</div>
+
+<header class="app-header">
+  <a href="index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+    <img src="logo.png" alt="AIDA BIMBEL" class="logo-img-sm" onerror="this.style.display='none'">
+    <div>
+      <div class="app-title">AIDA BIMBEL</div>
+      <div class="app-sub">Portal Tutor</div>
+    </div>
+  </a>
+  <div class="header-badge" id="guruBadge">🎓 Tutor</div>
+  <button id="guruLogout" onclick="guruLogout()" style="display:none;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);border-radius:999px;padding:5px 12px;font-size:11px;font-weight:800;color:#fff;cursor:pointer">Keluar</button>
+</header>
+
+<!-- LOGIN GATE GURU -->
+<div id="guruGate" style="position:fixed;inset:0;background:var(--cream);z-index:800;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div class="card" style="max-width:380px;width:100%;border:2px solid var(--green)">
+    <div class="card-title">🔐 Login Tutor</div>
+    <div id="guruGateErr" style="display:none;background:#FDEEEE;border:2px dashed #F5C2C2;border-radius:12px;padding:10px 14px;font-size:13px;color:#C0564F;font-weight:800;margin-bottom:12px"></div>
+    <div class="form-field" style="margin-bottom:16px"><label>No. HP (yang terdaftar di admin)</label>
+      <input type="tel" id="guruPhone" placeholder="08..." inputmode="numeric" onkeydown="if(event.key==='Enter')guruLogin()"></div>
+    <button class="btn btn-primary btn-full" id="guruLoginBtn" onclick="guruLogin()">✨ Masuk</button>
+    <div style="font-size:12px;color:var(--muted);font-weight:700;text-align:center;margin-top:12px">Nomor belum terdaftar? Hubungi admin ya 🙏</div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="cloud c1"></div><div class="cloud c2"></div>
+  <span class="spark" style="top:24px;left:28%">✦</span>
+  <span class="spark s2" style="top:70px;left:70%">✦</span>
+  <span class="spark s3" style="top:14px;right:24%">✧</span>
+  <h1>📝 Laporan <span class="hl">Belajar</span></h1>
+  <p>Isi laporan tiap sesi — beri bintang ⭐ untuk progress siswa</p>
+  <span class="hero-date" id="heroDate">📅 —</span>
+</div>
+
+<main>
+  <div class="step-bar">
+    <div class="step-dot active" id="s1">1</div>
+    <div class="step-line" id="sl1"></div>
+    <div class="step-dot" id="s2">2</div>
+  </div>
+
+  <!-- IDENTITAS -->
+  <div class="card">
+    <div class="card-title">👤 Identitas Sesi</div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Guru <button onclick="reloadData(this)" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--blue-ink);font-weight:800" title="Muat ulang data dari spreadsheet">🔄 refresh data</button></label>
+        <select id="guruSelect" onchange="onGuruChange()">
+          <option value="">Memuat guru...</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Pilih Murid / Kelas</label>
+        <select id="kelasSelect" onchange="onKelasChange()">
+          <option value="">Pilih guru dulu...</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Tanggal Sesi</label>
+        <input type="date" id="tglSesi" onchange="updateWA()">
+      </div>
+    </div>
+    <div class="kuota-pill" id="kuotaPill"></div>
+  </div>
+
+  <!-- MATERI + BINTANG -->
+  <div class="card">
+    <div class="card-title">📚 Materi &amp; Progress</div>
+    <div class="star-hint">Tulis tiap materi lalu beri bintang 1–4 ⭐ (1 = perlu bimbingan, 4 = excellent)</div>
+    <div id="materiList"></div>
+    <button class="add-materi" onclick="addMateriRow()">＋ Tambah Materi</button>
+    <div class="form-field" style="margin-top:14px">
+      <label>Teacher's Note (untuk orang tua)</label>
+      <textarea id="catatanInput" placeholder="Contoh: Mohon diulang membaca di rumah ya..." oninput="updateWA()"></textarea>
+    </div>
+  </div>
+
+  <!-- RIWAYAT -->
+  <div class="card" id="historyCard" style="display:none">
+    <div class="card-title">📜 Riwayat Sesi Terakhir</div>
+    <div id="historyList"><div class="empty-state">Memuat riwayat...</div></div>
+  </div>
+
+  <!-- WA PREVIEW -->
+  <div class="card">
+    <div class="card-title">📱 Preview Pesan (dikirim admin setelah dicek) <span style="font-size:14px">✦</span></div>
+    <div style="font-size:12px;color:var(--muted);font-weight:700;margin-bottom:10px">Laporan kamu masuk dulu ke admin untuk dicek typo &amp; bahasa. Setelah di-approve, admin yang kirim ke ortu ya 😊</div>
+    <div class="wa-preview">
+      <div class="traffic">
+        <div class="dot" style="background:#FF5F57"></div>
+        <div class="dot" style="background:#FEBC2E"></div>
+        <div class="dot" style="background:#28C840"></div>
+      </div>
+      <div style="margin-bottom:6px">
+        <div class="wa-sender">AIDA BIMBEL</div>
+        <div class="wa-bubble"><span id="waText">— pilih guru dan murid dulu —</span></div>
+        <div class="wa-time" id="waTimeDisp">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="saved-banner" id="savedBanner">
+    <span style="font-size:22px">✅</span>
+    <span>Laporan tersimpan &amp; absensi otomatis tercatat hadir! Laporan menunggu pengecekan admin sebelum dikirim ke ortu ⏳</span>
+  </div>
+
+  <div id="step1Btns">
+    <button class="btn btn-primary btn-full" onclick="saveReport()">💾 Simpan Laporan</button>
+  </div>
+  <div id="step2Btns" style="display:none">
+    <button class="btn btn-dark" style="width:100%;justify-content:center" onclick="resetForm()">✏️ Isi Laporan Baru</button>
+  </div>
+</main>
+
+<div id="toast">—</div>
+
+<script src="api.js"></script>
+<script>
+let guruData = [], kelasData = [], muridData = [], sesiData = [];
+let currentGuru = null;
+
+// ── LOGIN GURU (no. HP) ─────────────────────────────────────
+async function guruLogin() {
+  const phone = document.getElementById('guruPhone').value.trim();
+  const err = document.getElementById('guruGateErr');
+  err.style.display = 'none';
+  if (!phone) { err.textContent = 'Isi nomor HP dulu ya 😊'; err.style.display = 'block'; return; }
+  const btn = document.getElementById('guruLoginBtn');
+  btn.disabled = true; btn.textContent = '⏳ Memeriksa...';
+  try {
+    currentGuru = await API.loginGuru(phone);
+    sessionStorage.setItem('aida_guru', phone);
+    document.getElementById('guruGate').style.display = 'none';
+    document.getElementById('guruLogout').style.display = 'inline-block';
+    document.getElementById('guruBadge').textContent = '👩‍🏫 ' + currentGuru.nama;
+    applyGuruLock();
+  } catch (e) {
+    err.textContent = e.message; err.style.display = 'block';
+  }
+  btn.disabled = false; btn.textContent = '✨ Masuk';
+}
+function guruLogout() { sessionStorage.removeItem('aida_guru'); location.reload(); }
+function applyGuruLock() {
+  if (!currentGuru) return;
+  const sel = document.getElementById('guruSelect');
+  if ([...sel.options].some(o => o.value === currentGuru.id)) {
+    sel.value = currentGuru.id;
+    sel.disabled = true;
+    onGuruChange();
+  }
+}
+
+// ── REFRESH DATA dari spreadsheet ───────────────────────────
+async function reloadData(btn) {
+  if (btn) btn.textContent = '⏳ memuat...';
+  const hasil = await Promise.allSettled([
+    API.getGuru(),
+    API.getKelas({ aktif: 'aktif' }),
+    API.getMurid({ aktif: 'aktif' }),
+    API.getSesiAllKelas(),
+  ]);
+  guruData  = hasil[0].status === 'fulfilled' ? hasil[0].value : guruData;
+  kelasData = hasil[1].status === 'fulfilled' ? hasil[1].value : kelasData;
+  muridData = hasil[2].status === 'fulfilled' ? hasil[2].value : muridData;
+  sesiData  = hasil[3].status === 'fulfilled' ? hasil[3].value : sesiData;
+  const gagal = hasil.filter(h => h.status === 'rejected');
+  if (gagal.length) showToast('Sebagian data gagal dimuat: ' + gagal[0].reason.message, 'error');
+  else if (btn) showToast('Data ter-refresh! ✦', 'success');
+  populateGuru();
+  applyGuruLock();
+  if (!currentGuru) onGuruChange();
+  if (btn) btn.textContent = '🔄 refresh data';
+}
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const today = new Date();
+  document.getElementById('tglSesi').value = today.toISOString().split('T')[0];
+  document.getElementById('heroDate').textContent =
+    '📅 ' + today.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('waTimeDisp').textContent =
+    today.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+  addMateriRow();
+
+  // Auto-login kalau pernah login di sesi ini
+  const savedPhone = sessionStorage.getItem('aida_guru');
+  if (savedPhone) {
+    try {
+      currentGuru = await API.loginGuru(savedPhone);
+      document.getElementById('guruGate').style.display = 'none';
+      document.getElementById('guruLogout').style.display = 'inline-block';
+      document.getElementById('guruBadge').textContent = '🎓 ' + currentGuru.nama;
+    } catch (e) { sessionStorage.removeItem('aida_guru'); }
+  }
+
+  await reloadData(null); // load semua data (terpisah per request)
+  document.getElementById('loadingOverlay').style.display = 'none';
+  updateWA();
+});
+
+function populateGuru() {
+  const sel = document.getElementById('guruSelect');
+  sel.innerHTML = '<option value="">Pilih Guru...</option>' +
+    guruData.filter(g => g.aktif !== 'nonaktif')
+      .map(g => `<option value="${g.id}">${g.nama}</option>`).join('');
+}
+
+function onGuruChange() {
+  const gid = document.getElementById('guruSelect').value;
+  const sel = document.getElementById('kelasSelect');
+  // Default (belum pilih guru): tampilkan SEMUA murid; setelah pilih guru: difilter
+  const list = gid ? kelasData.filter(k => k.guru_id === gid) : kelasData;
+  sel.innerHTML = '<option value="">Pilih Murid / Kelas...</option>' +
+    list.map(k => `<option value="${k.id}">${k.nama_murid} · ${k.program} (${k.tipe})${gid ? '' : ' — ' + (k.nama_guru || '')}</option>`).join('');
+  document.getElementById('kuotaPill').style.display = 'none';
+  document.getElementById('historyCard').style.display = 'none';
+  updateWA();
+}
+
+function currentKelas() {
+  const kid = document.getElementById('kelasSelect').value;
+  return kelasData.find(k => k.id === kid) || null;
+}
+
+async function onKelasChange() {
+  const k = currentKelas();
+  const pill = document.getElementById('kuotaPill');
+  document.getElementById('historyCard').style.display = k ? 'block' : 'none';
+  if (k) {
+    const s = sesiData.find(x => x.kelas_id === k.id);
+    if (s) {
+      const full = s.sesi >= s.kuota;
+      pill.className = 'kuota-pill' + (full ? ' full' : '');
+      pill.style.display = 'block';
+      pill.textContent = (full ? '⚠️ Kuota terpenuhi — ' : '✅ ') +
+        `Sesi berjalan: ${s.sesi} / ${s.kuota}` + (full ? ' (waktunya invoice!)' : '');
+    } else pill.style.display = 'none';
+  } else pill.style.display = 'none';
+
+  updateWA();
+  if (!k) return;
+  document.getElementById('historyList').innerHTML = '<div class="empty-state">⏳ Memuat riwayat...</div>';
+  try {
+    const laporan = await API.getLaporan({ kelas_id: k.id });
+    renderHistory(Array.isArray(laporan) ? laporan.slice(0, 5) : []);
+  } catch (e) {
+    document.getElementById('historyList').innerHTML = '<div class="empty-state">Gagal memuat riwayat</div>';
+  }
+}
+
+function renderHistory(rows) {
+  if (!rows.length) {
+    document.getElementById('historyList').innerHTML = '<div class="empty-state">Belum ada riwayat sesi ✦</div>';
+    return;
+  }
+  document.getElementById('historyList').innerHTML = rows.map(r => {
+    const materi = LU.parseMateri(r.materi_json);
+    const first = materi[0] ? materi[0].m : '';
+    return `
+    <div class="history-item">
+      <div class="hi-head" onclick="toggleHist(this)">
+        <div style="flex:1">
+          <div style="font-weight:800;font-size:13px">${LU.fmtDate(r.tanggal)} · ${r.program || '–'}</div>
+          <div style="font-size:12px;color:var(--muted)">${first.slice(0, 60)}${first.length > 60 ? '...' : ''}</div>
+        </div>
+        <span style="color:var(--muted)">▼</span>
+      </div>
+      <div class="hi-body">
+        ${materi.map(x => `<div>• ${x.m} <span class="hi-star">${LU.stars(x.s)}</span></div>`).join('') || '—'}
+        <div style="margin-top:8px"><strong>Note:</strong> ${r.catatan || '—'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── MATERI ROWS ─────────────────────────────────────────────
+function addMateriRow(val = '', star = 3) {
+  const div = document.createElement('div');
+  div.className = 'materi-row';
+  div.innerHTML = `
+    <input type="text" placeholder="Contoh: Reading book &quot;Shoes&quot;" value="${val.replace(/"/g, '&quot;')}" oninput="updateWA()">
+    <div class="star-pick">${[1, 2, 3, 4].map(n => `<button type="button" class="star-btn${n <= star ? ' on' : ''}" data-n="${n}" onclick="setStar(this)">★</button>`).join('')}</div>
+    <button type="button" class="del-materi" onclick="this.parentElement.remove();updateWA()">✕</button>`;
+  document.getElementById('materiList').appendChild(div);
+}
+
+function setStar(btn) {
+  const n = Number(btn.dataset.n);
+  btn.parentElement.querySelectorAll('.star-btn').forEach(b => {
+    b.classList.toggle('on', Number(b.dataset.n) <= n);
+  });
+  updateWA();
+}
+
+function getMateri() {
+  return [...document.querySelectorAll('.materi-row')].map(row => ({
+    m: row.querySelector('input').value.trim(),
+    s: row.querySelectorAll('.star-btn.on').length,
+  })).filter(x => x.m);
+}
+
+// ── WA TEMPLATE ─────────────────────────────────────────────
+function updateWA() {
+  const k = currentKelas();
+  const tgl = document.getElementById('tglSesi').value;
+  const catatan = document.getElementById('catatanInput').value.trim();
+  const materi = getMateri();
+  const tglFmt = tgl
+    ? new Date(tgl).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    : '—';
+
+  const materiTxt = materi.length
+    ? materi.map(x => `• ${x.m} ${LU.stars(x.s)}`).join('\n')
+    : '—';
+
+  document.getElementById('waText').textContent =
+`Halo Orang Tua 👋
+
+📋 Laporan Belajar — AIDA BIMBEL
+${tglFmt}
+Nama: ${k ? k.nama_murid : '—'}
+Program: ${k ? k.program + ' (' + k.tipe + ')' : '—'}
+
+Materi hari ini:
+${materiTxt}
+
+📝 Catatan Tutor:
+${catatan || '—'}
+
+Terima kasih atas kepercayaannya 🙏
+— AIDA BIMBEL`;
+}
+
+// ── SAVE ─────────────────────────────────────────────────────
+async function saveReport() {
+  const k = currentKelas();
+  const guru_id = document.getElementById('guruSelect').value;
+  if (!guru_id) { showToast('Pilih guru dulu!', 'error'); return; }
+  if (!k) { showToast('Pilih murid / kelas dulu!', 'error'); return; }
+  const materi = getMateri();
+  if (!materi.length) { showToast('Isi minimal 1 materi!', 'error'); return; }
+
+  const btn = document.querySelector('#step1Btns .btn');
+  btn.textContent = '⏳ Menyimpan...';
+  btn.disabled = true;
+
+  try {
+    await API.addLaporan({
+      kelas_id: k.id,
+      murid_id: k.murid_id,
+      guru_id,
+      tanggal: document.getElementById('tglSesi').value,
+      program: k.program,
+      materi,
+      catatan: document.getElementById('catatanInput').value,
+      auto_absen: true,
+    });
+
+    document.getElementById('s1').className = 'step-dot done';
+    document.getElementById('s1').textContent = '✓';
+    document.getElementById('sl1').className = 'step-line done';
+    document.getElementById('s2').className = 'step-dot active';
+
+    document.getElementById('savedBanner').style.display = 'flex';
+    document.getElementById('step1Btns').style.display = 'none';
+    document.getElementById('step2Btns').style.display = 'block';
+    document.querySelectorAll('.form-field input,.form-field select,.form-field textarea,.materi-row input')
+      .forEach(el => el.disabled = true);
+
+    showToast('Laporan disimpan — menunggu approval admin ⏳⭐', 'success');
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  } catch (e) {
+    showToast('Gagal: ' + e.message, 'error');
+    btn.textContent = '💾 Simpan Laporan';
+    btn.disabled = false;
+  }
+}
+
+function resetForm() {
+  document.querySelectorAll('.form-field input,.form-field select,.form-field textarea,.materi-row input')
+    .forEach(el => el.disabled = false);
+  document.getElementById('kelasSelect').value = '';
+  document.getElementById('catatanInput').value = '';
+  document.getElementById('materiList').innerHTML = '';
+  addMateriRow();
+  document.getElementById('kuotaPill').style.display = 'none';
+  document.getElementById('historyCard').style.display = 'none';
+  document.getElementById('savedBanner').style.display = 'none';
+  document.getElementById('step1Btns').style.display = 'block';
+  document.getElementById('step2Btns').style.display = 'none';
+  const b = document.querySelector('#step1Btns .btn');
+  b.textContent = '💾 Simpan Laporan'; b.disabled = false;
+  ['s1', 's2'].forEach((id, i) => {
+    const e = document.getElementById(id);
+    e.className = 'step-dot' + (i === 0 ? ' active' : '');
+    e.textContent = i + 1;
+  });
+  document.getElementById('sl1').className = 'step-line';
+  updateWA();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleHist(head) { head.nextElementSibling.classList.toggle('open'); }
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + (type || '');
+  setTimeout(() => t.className = '', 3500);
+}
+</script>
+</body>
+</html>
