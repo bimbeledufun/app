@@ -96,6 +96,25 @@ const LU = {
     } catch {}
     return this.PROGRAMS;
   },
+  getNamaBimbel() {
+    try { return JSON.parse(localStorage.getItem('aida_settings') || '{}').nama || 'Bimbel Edufun'; } catch { return 'Bimbel Edufun'; }
+  },
+  getBank() {
+    try { return JSON.parse(localStorage.getItem('aida_settings') || '{}').bank || this.BANK; } catch { return this.BANK; }
+  },
+  getTeksInvoice() {
+    try { return JSON.parse(localStorage.getItem('aida_settings') || '{}').teksInvoice || ''; } catch { return ''; }
+  },
+  getTeksLaporan() {
+    try { return JSON.parse(localStorage.getItem('aida_settings') || '{}').teksLaporan || ''; } catch { return ''; }
+  },
+  // Terapkan nama bimbel ke elemen header halaman (id="siteTitle")
+  applyBrandToPage() {
+    const nama = this.getNamaBimbel();
+    const el = document.getElementById('siteTitle');
+    if (el) el.textContent = nama;
+    document.title = document.title.replace('AIDA BIMBEL', nama);
+  },
   TIPE: ['Private', 'Semi Private', 'Home Service'],
   GRADES: ['Growing', 'Improving', 'Advanced'],
   BANK: 'BCA 2881889996 a.n. Clara E',
@@ -118,9 +137,12 @@ const LU = {
     try { const a = JSON.parse(json || '[]'); return Array.isArray(a) ? a : []; } catch { return []; }
   },
   stars: (n) => '★'.repeat(Number(n) || 0) + '☆'.repeat(Math.max(0, 4 - (Number(n) || 0))),
-  // Template WA invoice AIDA BIMBEL
-  waInvoice: ({ bulan, nama, program, sesi, rate, total }) => (
-`Dear Parents,
+  // Template WA invoice — pakai settings (nama, rekening, footer)
+  waInvoice: ({ bulan, nama, program, sesi, rate, total }) => {
+    const bimbel = LU.getNamaBimbel();
+    const bank   = LU.getBank();
+    const footer = LU.getTeksInvoice() || 'Mohon konfirmasi setelah melakukan pembayaran ya 🙏\nTerima kasih banyak atas kepercayaannya 😊';
+    return `Dear Parents,
 Berikut kami informasikan billing bulan ${bulan}
 
 Nama Anak: ${nama}
@@ -130,33 +152,40 @@ Jumlah Sesi: ${sesi}
 💰 Total: ${LU.rp(total)}
 
 Pembayaran dapat dilakukan melalui:
-${LU.BANK}
+${bank}
 
-Mohon konfirmasi setelah melakukan pembayaran ya 🙏
-Terima kasih banyak atas kepercayaannya 😊
-— AIDA BIMBEL`),
-  // Template WA laporan harian (dipakai guru utk preview & admin utk kirim setelah approve)
-  waLaporan: ({ tanggal, nama, program, tipe, materi, catatan }) => {
+${footer}
+— ${bimbel}`;
+  },
+  // Template WA laporan harian — pakai settings (nama, footer) + extra fields
+  waLaporan: ({ tanggal, nama, program, tipe, materi, catatan, extra }) => {
+    const bimbel = LU.getNamaBimbel();
+    const footer = LU.getTeksLaporan() || 'Terima kasih atas kepercayaannya 🙏';
     const tglFmt = tanggal
       ? new Date(tanggal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
       : '—';
     const materiTxt = (materi && materi.length)
       ? materi.map(x => `• ${x.m} ${LU.stars(x.s)}`).join('\n')
       : '—';
-    return `Halo Orang Tua 👋
+    let extraObj = {};
+    try { extraObj = (typeof extra === 'string' ? JSON.parse(extra) : extra) || {}; } catch {}
+    const rincianTxt  = extraObj.rincian  ? `\n\n📖 Rincian Materi:\n${extraObj.rincian}`  : '';
+    const prestasiTxt = extraObj.prestasi ? `\n\n🏆 Prestasi Siswa:\n${extraObj.prestasi}` : '';
+    const kendalaTxt  = extraObj.kendala  ? `\n\n⚡ Kendala & Evaluasi:\n${extraObj.kendala}` : '';
+    return `Halo parents! 👋
 
-📋 Laporan Belajar — AIDA BIMBEL
+📋 Laporan Belajar — ${bimbel}
 ${tglFmt}
 Nama: ${nama || '—'}
 Program: ${program || '—'}${tipe ? ' (' + tipe + ')' : ''}
 
 Materi hari ini:
-${materiTxt}
+${materiTxt}${rincianTxt}${prestasiTxt}${kendalaTxt}
 
 📝 Catatan Tutor:
 ${catatan || '—'}
 
-Terima kasih atas kepercayaannya 🙏
-— AIDA BIMBEL`;
+${footer}
+— ${bimbel}`;
   },
 };

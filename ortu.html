@@ -139,7 +139,7 @@ main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
 <header class="app-header">
   <img src="logo.png" alt="AIDA BIMBEL" class="logo-img-sm" onerror="this.style.display='none'">
   <div>
-    <div class="app-title">AIDA BIMBEL</div>
+    <div class="app-title" id="siteTitle">AIDA BIMBEL</div>
     <div class="app-sub">Portal Orang Tua</div>
   </div>
   <div class="header-badge">👨‍👩‍👧 Parents</div>
@@ -217,6 +217,7 @@ let lapPage = 1;
 const LAP_PER_PAGE = 10;
 
 window.addEventListener('DOMContentLoaded', async () => {
+  LU.applyBrandToPage();
   const saved = sessionStorage.getItem('aida_ortu');
   if (saved) {
     try {
@@ -453,7 +454,7 @@ async function downloadKelasReport(kelasId, programLabel){
     sheet.innerHTML = `
       <div class="rs-head">
         <img src="logo.png" class="rs-logo" onerror="this.style.display='none'">
-        <div class="rs-titlebox"><h2>AIDA BIMBEL REPORT</h2></div>
+        <div class="rs-titlebox"><h2>${LU.getNamaBimbel().toUpperCase()} REPORT</h2></div>
       </div>
       <div class="rs-meta">
         <div class="m1"><div class="rs-lbl">PROGRAM</div>${programLabel}</div>

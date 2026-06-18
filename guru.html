@@ -154,7 +154,7 @@ main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
   <a href="index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
     <img src="logo.png" alt="AIDA BIMBEL" class="logo-img-sm" onerror="this.style.display='none'">
     <div>
-      <div class="app-title">AIDA BIMBEL</div>
+      <div class="app-title" id="siteTitle">AIDA BIMBEL</div>
       <div class="app-sub">Portal Tutor</div>
     </div>
   </a>
@@ -500,6 +500,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   addMateriRow();
   ttdInit();
+  LU.applyBrandToPage();
 
   // Auto-login kalau pernah login di sesi ini
   const savedPhone = sessionStorage.getItem('aida_guru');
@@ -630,33 +631,20 @@ function getMateri() {
 // ── WA TEMPLATE ─────────────────────────────────────────────
 function updateWA() {
   const k = currentKelas();
-  const tgl = document.getElementById('tglSesi').value;
-  const catatan = document.getElementById('catatanInput').value.trim();
-  const materi = getMateri();
-  const tglFmt = tgl
-    ? new Date(tgl).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-    : '—';
-
-  const materiTxt = materi.length
-    ? materi.map(x => `• ${x.m} ${LU.stars(x.s)}`).join('\n')
-    : '—';
-
-  document.getElementById('waText').textContent =
-`Halo Orang Tua 👋
-
-📋 Laporan Belajar — AIDA BIMBEL
-${tglFmt}
-Nama: ${k ? k.nama_murid : '—'}
-Program: ${k ? k.program + ' (' + k.tipe + ')' : '—'}
-
-Materi hari ini:
-${materiTxt}
-
-📝 Catatan Tutor:
-${catatan || '—'}
-
-Terima kasih atas kepercayaannya 🙏
-— AIDA BIMBEL`;
+  const extra = {
+    rincian:  document.getElementById('rincianInput')?.value.trim() || '',
+    prestasi: document.getElementById('prestasiInput')?.value.trim() || '',
+    kendala:  document.getElementById('kendalaInput')?.value.trim() || '',
+  };
+  document.getElementById('waText').textContent = LU.waLaporan({
+    tanggal: document.getElementById('tglSesi').value,
+    nama:    k ? k.nama_murid : '—',
+    program: k ? k.program : '—',
+    tipe:    k ? k.tipe : '',
+    materi:  getMateri(),
+    catatan: document.getElementById('catatanInput').value.trim(),
+    extra,
+  });
 }
 
 // ── SAVE ─────────────────────────────────────────────────────

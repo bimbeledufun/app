@@ -153,7 +153,7 @@ tr:hover td{background:#FFFAF8}
 <header class="app-header">
   <img src="logo.png" alt="AIDA BIMBEL" class="logo-img-sm" onerror="this.style.display='none'">
   <div>
-    <div class="app-title">AIDA BIMBEL</div>
+    <div class="app-title" id="siteTitle">AIDA BIMBEL</div>
     <div class="app-sub">Panel Admin</div>
   </div>
   <div class="header-badge">🔑 Admin</div>
@@ -414,6 +414,8 @@ tr:hover td{background:#FFFAF8}
           <input id="setWA" placeholder="08..." inputmode="numeric"></div>
         <div class="form-field"><label>Instagram</label>
           <input id="setIG" placeholder="@aidabimbel"></div>
+        <div class="form-field" style="grid-column:1/-1"><label>Rekening Pembayaran <span style="font-size:11px;font-weight:600;color:var(--muted)">(muncul di invoice & WA)</span></label>
+          <input id="setBank" placeholder="BCA 1234567890 a.n. Nama Pemilik"></div>
         <div class="form-field" style="grid-column:1/-1"><label>Pilihan Program <span style="font-size:11px;font-weight:600;color:var(--muted)">(pisah koma — akan muncul di semua form program)</span></label>
           <input id="setPrograms" placeholder="Tutor, Swim, Art, Mandarin"></div>
       </div>
@@ -439,6 +441,19 @@ tr:hover td{background:#FFFAF8}
         <button class="btn btn-ghost" onclick="loadSettings()">↺ Reset ke tersimpan</button>
       </div>
       <div id="settingsSavedNote" style="display:none;font-size:12px;color:var(--green);font-weight:800;margin-top:10px">✅ Tersimpan di perangkat ini</div>
+    </div>
+    <div class="card">
+      <div class="card-title">🔐 Ubah Password Admin</div>
+      <div class="form-grid">
+        <div class="form-field"><label>Password Lama</label>
+          <input type="password" id="setPwdLama" placeholder="Password saat ini" autocomplete="current-password"></div>
+        <div class="form-field"><label>Password Baru</label>
+          <input type="password" id="setPwdBaru" placeholder="Min. 6 karakter" autocomplete="new-password"></div>
+        <div class="form-field"><label>Konfirmasi Password Baru</label>
+          <input type="password" id="setPwdKonfirm" placeholder="Ulangi password baru" autocomplete="new-password"></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:4px" onclick="changePassword()">🔐 Ubah Password</button>
+      <div id="pwdNote" style="display:none;font-size:12px;color:var(--green);font-weight:800;margin-top:8px"></div>
     </div>
     <div class="card" style="border:2px dashed var(--border)">
       <div class="card-title">🔧 Tools Teknis</div>
@@ -580,7 +595,8 @@ async function startApp(){
   document.getElementById('repDari').value = todayYM + '-01';
   document.getElementById('repSampai').value = todayStr;
   await refreshBaseData();
-  refreshProgramList(); // pakai settings lokal saat pertama buka
+  refreshProgramList();
+  LU.applyBrandToPage(); // terapkan nama bimbel dari settings lokal
   loadDashboard();
 }
 
@@ -972,7 +988,7 @@ async function approveLaporan(id){
 function kirimLapWA(i){
   const r = (window._lapRows||[])[i]; if(!r) return;
   const k = kelasData.find(x=>x.id===r.kelas_id);
-  const txt = LU.waLaporan({ tanggal:r.tanggal, nama:r.nama_murid, program:r.program, tipe:k?k.tipe:'', materi:LU.parseMateri(r.materi_json), catatan:r.catatan });
+  const txt = LU.waLaporan({ tanggal:r.tanggal, nama:r.nama_murid, program:r.program, tipe:k?k.tipe:'', materi:LU.parseMateri(r.materi_json), catatan:r.catatan, extra:r.extra });
   const m = muridData.find(x=>x.id===r.murid_id);
   const waRaw = m ? (m.wa_laporan||m.wa_ortu||'') : '';
   const wa = String(waRaw).replace(/\D/g,'');
@@ -1394,10 +1410,12 @@ function applySettingsToForm(s){
   document.getElementById('setAlamat').value       = s.alamat       || '';
   document.getElementById('setWA').value           = s.wa           || '';
   document.getElementById('setIG').value           = s.ig           || '';
+  document.getElementById('setBank').value         = s.bank         || '';
   document.getElementById('setPrograms').value     = s.programs     || '';
   document.getElementById('setTeksInvoice').value  = s.teksInvoice  || '';
   document.getElementById('setTeksLaporan').value  = s.teksLaporan  || '';
   refreshProgramList();
+  LU.applyBrandToPage();
 }
 async function loadSettings(){
   // Coba dari server; fallback ke localStorage
@@ -1418,12 +1436,14 @@ async function saveSettings(){
     alamat:      document.getElementById('setAlamat').value.trim(),
     wa:          document.getElementById('setWA').value.trim(),
     ig:          document.getElementById('setIG').value.trim(),
+    bank:        document.getElementById('setBank').value.trim(),
     programs:    document.getElementById('setPrograms').value.trim(),
     teksInvoice: document.getElementById('setTeksInvoice').value.trim(),
     teksLaporan: document.getElementById('setTeksLaporan').value.trim(),
   };
   localStorage.setItem('aida_settings', JSON.stringify(s)); // simpan lokal dulu
   refreshProgramList(); // update datalist program langsung
+  LU.applyBrandToPage(); // update header nama bimbel langsung
   try{
     await API.saveSettings(s); // lalu kirim ke server
   }catch(e){
@@ -1455,6 +1475,33 @@ function uploadFeeBukti(guruId, bulan, input){
   localStorage.setItem(key, file.name);
   showToast('Bukti "'+file.name+'" tercatat 📎 (tersimpan lokal)','success');
   loadFeeGuru();
+}
+
+// ── UBAH PASSWORD ADMIN ──────────────────────────────────────
+async function changePassword(){
+  const lama    = document.getElementById('setPwdLama').value;
+  const baru    = document.getElementById('setPwdBaru').value;
+  const konfirm = document.getElementById('setPwdKonfirm').value;
+  const note    = document.getElementById('pwdNote');
+  note.style.display = 'none';
+  if (!lama || !baru)  { showToast('Isi semua field password', 'error'); return; }
+  if (baru !== konfirm){ showToast('Password baru tidak cocok ❌', 'error'); return; }
+  if (baru.length < 6) { showToast('Password minimal 6 karakter', 'error'); return; }
+  // Verifikasi password lama dengan re-login
+  const savedAdmin = JSON.parse(sessionStorage.getItem('lu_admin') || '{}');
+  if (lama !== savedAdmin.pass) { showToast('Password lama salah ❌', 'error'); return; }
+  try {
+    await API.saveSettings({ admin_password: baru });
+    // Update session agar tidak keluar otomatis
+    sessionStorage.setItem('lu_admin', JSON.stringify({ phone: savedAdmin.phone, pass: baru }));
+    document.getElementById('setPwdLama').value = '';
+    document.getElementById('setPwdBaru').value = '';
+    document.getElementById('setPwdKonfirm').value = '';
+    note.textContent = '✅ Password berhasil diubah!';
+    note.style.display = 'block';
+    showToast('Password diubah! 🔐', 'success');
+    setTimeout(() => { note.style.display = 'none'; }, 4000);
+  } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
 }
 
 // ── TOOLS TEKNIS ─────────────────────────────────────────────
