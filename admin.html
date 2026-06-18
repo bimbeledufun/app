@@ -163,7 +163,7 @@ tr:hover td{background:#FFFAF8}
 <!-- LOGIN GATE ADMIN -->
 <div id="adminGate" style="position:fixed;inset:0;background:var(--cream);z-index:800;display:flex;align-items:center;justify-content:center;padding:20px">
   <div class="card" style="max-width:380px;width:100%;border:2px solid var(--green)">
-    <div class="card-title">🔐 Login Admin — AIDA BIMBEL</div>
+    <div class="card-title" id="adminLoginTitle">🔐 Login Admin — AIDA BIMBEL</div>
     <div id="adminGateErr" style="display:none;background:var(--red-soft);border:2px dashed #F5C2C2;border-radius:12px;padding:10px 14px;font-size:13px;color:#C0564F;font-weight:800;margin-bottom:12px"></div>
     <div class="form-field" style="margin-bottom:12px"><label>No. HP</label>
       <input type="tel" id="adminPhone" placeholder="08..." inputmode="numeric"></div>
@@ -578,6 +578,7 @@ async function adminLogin(){
 function adminLogout(){ sessionStorage.removeItem('lu_admin'); location.reload(); }
 
 window.addEventListener('DOMContentLoaded', async () => {
+  LU.applyBrandToPage(); // terapkan nama dari localStorage seketika (termasuk login card)
   const saved = sessionStorage.getItem('lu_admin');
   if(saved){
     try{
@@ -761,7 +762,7 @@ async function hapusMurid(id,nama){
 function copyOrtuLogin(id){
   const m = muridData.find(x=>x.id===id); if(!m) return;
   const url = location.href.replace(/admin\.html.*$/,'') + 'ortu.html';
-  const txt = `Halo Parents of ${m.nama} 👋\n\nPortal Orang Tua AIDA BIMBEL:\n${url}\n\nLogin cukup pakai nomor WA ini (${m.wa_ortu||'nomor yang terdaftar di admin'}) ya 😊\nDi portal bisa lihat laporan belajar, progres sesi, dan tagihan.`;
+  const txt = `Halo Parents of ${m.nama} 👋\n\nPortal Orang Tua ${LU.getNamaBimbel()}:\n${url}\n\nLogin cukup pakai nomor WA ini (${m.wa_ortu||'nomor yang terdaftar di admin'}) ya 😊\nDi portal bisa lihat laporan belajar, progres sesi, dan tagihan.`;
   navigator.clipboard.writeText(txt);
   showToast('Info login ortu disalin — tinggal paste di WA! 🔗','success');
 }
@@ -1258,7 +1259,7 @@ async function buatReport(){
     document.getElementById('reportSheet').innerHTML = `
       <div class="rs-head">
         <img src="logo.png" class="rs-logo" onerror="this.style.display='none'">
-        <div class="rs-titlebox"><h2>AIDA BIMBEL REPORT</h2></div>
+        <div class="rs-titlebox"><h2>${LU.getNamaBimbel().toUpperCase()} REPORT</h2></div>
       </div>
       <div class="rs-meta">
         <div class="m1"><div style="font-size:9px;font-weight:700;opacity:.6;letter-spacing:.5px;margin-bottom:2px">PERIODE</div>${periode}</div>
@@ -1281,9 +1282,9 @@ async function buatReport(){
         <div class="note-h">Teacher's Note</div>
         <div class="note-b">${note||''}</div>
       </div>
-      <div class="rs-tagline">☆ Belajar dengan semangat bersama <span class="pk">AIDA BIMBEL</span> ☆</div>`;
+      <div class="rs-tagline">☆ Belajar dengan semangat bersama <span class="pk">${LU.getNamaBimbel()}</span> ☆</div>`;
 
-    window._repFileName = `${m.nama} - ${periode} - AIDA BIMBEL Report`;
+    window._repFileName = `${m.nama} - ${periode} - ${LU.getNamaBimbel()} Report`;
     document.getElementById('reportSheetWrap').style.display='block';
     document.getElementById('repPrintBtn').style.display='inline-flex';
     showToast('Report siap! Klik Print / Save PDF 🖨️','success');
@@ -1353,7 +1354,7 @@ function copyFeeRekap(i){
   const r = (window._feeRows||[])[i]; if(!r) return;
   const txt = `💰 Rekap Fee ${r.nama_guru} — ${LU.bulanID(window._feeBulan)}\n` +
     r.detail.map(d=>`• ${d.nama_murid} (${d.program}): ${d.sesi} sesi × ${LU.rp(d.fee_per_sesi)} = ${LU.rp(d.subtotal)}`).join('\n') +
-    `\nTotal: ${r.total_sesi} sesi — ${LU.rp(r.total_fee)}\n\n— AIDA BIMBEL`;
+    `\nTotal: ${r.total_sesi} sesi — ${LU.rp(r.total_fee)}\n\n— ${LU.getNamaBimbel()}`;
   navigator.clipboard.writeText(txt);
   showToast('Rekap fee disalin! 📋','success');
 }

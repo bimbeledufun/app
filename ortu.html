@@ -217,7 +217,8 @@ let lapPage = 1;
 const LAP_PER_PAGE = 10;
 
 window.addEventListener('DOMContentLoaded', async () => {
-  await LU.loadSettingsFromAPI();
+  LU.applyBrandToPage();          // apply dari localStorage seketika (tanpa delay)
+  LU.loadSettingsFromAPI();       // fetch fresh dari API di background (non-blocking)
   const saved = sessionStorage.getItem('aida_ortu');
   if (saved) {
     try {
@@ -388,7 +389,7 @@ async function loadInvoice() {
         ${r.status !== 'lunas' ? `<button class="btn btn-primary" onclick="pilihBukti('${r.id}')">📤 Upload Bukti</button>` : ''}
         ${r.bukti_url ? `<a class="btn btn-blue" href="${r.bukti_url}" target="_blank">🧾 Bukti</a>` : ''}
       </div>`).join('') +
-      `<div style="font-size:12px;color:var(--muted);font-weight:700;margin-top:6px">Pembayaran: ${LU.BANK} · mohon konfirmasi setelah transfer ya 🙏</div>`;
+      `<div style="font-size:12px;color:var(--muted);font-weight:700;margin-top:6px">Pembayaran: ${LU.getBank()} · mohon konfirmasi setelah transfer ya 🙏</div>`;
   } catch (e) { box.innerHTML = '<div class="empty-state">Gagal memuat tagihan</div>'; }
 }
 

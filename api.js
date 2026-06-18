@@ -118,6 +118,9 @@ const LU = {
       const e = document.getElementById(id);
       if (e) e.textContent = nama;
     });
+    // Admin login card title
+    const loginTitle = document.getElementById('adminLoginTitle');
+    if (loginTitle) loginTitle.textContent = `🔐 Login Admin — ${nama}`;
   },
   // Ambil settings dari API, simpan ke localStorage, lalu apply ke halaman
   async loadSettingsFromAPI() {

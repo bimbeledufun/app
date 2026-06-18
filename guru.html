@@ -500,7 +500,8 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   addMateriRow();
   ttdInit();
-  await LU.loadSettingsFromAPI();
+  LU.applyBrandToPage();          // apply dari localStorage seketika
+  LU.loadSettingsFromAPI();       // fetch fresh dari API di background
 
   // Auto-login kalau pernah login di sesi ini
   const savedPhone = sessionStorage.getItem('aida_guru');
