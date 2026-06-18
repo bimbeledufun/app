@@ -1301,6 +1301,41 @@ function printReport(){
 }
 
 // ── FEE GURU ────────────────────────────────────────────────
+function feeBlock(r, idx, bln, paid, splitLabel){
+  const feeKey = `fee_${r.guru_id}_${bln}`;
+  const badgeCls = paid ? 'bg-mint' : 'bg-yellow';
+  const badgeTxt = paid ? '✅ Sudah Dibayar' : '⏳ Belum Dibayar';
+  const showToggle = !splitLabel;
+  return `
+  <div style="border:2px dashed ${paid?'var(--mint)':'var(--blue)'};border-radius:16px;padding:14px 16px;margin-bottom:12px;background:${paid?'var(--mint-soft)':'var(--blue-soft)'}">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <strong style="font-family:'Baloo 2',cursive;font-size:15px">👩‍🏫 ${r.nama_guru}</strong>
+      ${splitLabel ? `<span style="font-size:11px;color:var(--muted);font-style:italic">${splitLabel}</span>` : ''}
+      <span class="badge bg-pink">${r.total_sesi} sesi</span>
+      <span class="badge ${badgeCls}">${badgeTxt}</span>
+      <span style="margin-left:auto;font-weight:900;font-size:15px;color:var(--blue-ink)">${LU.rp(r.total_fee)}</span>
+      <button class="btn btn-ghost btn-sm" onclick="toggleFeeDet('${idx}')">detail ▾</button>
+      <button class="btn btn-blue btn-sm" onclick="copyFeeRekapByIdx('${idx}')" title="Salin rekap">📋</button>
+      ${showToggle
+        ? paid
+          ? `<button class="btn btn-ghost btn-sm" onclick="toggleFeeStatus('${r.guru_id}','${bln}','belum')" title="Tandai belum dibayar">↩️</button>`
+          : `<button class="btn btn-mint btn-sm" onclick="toggleFeeStatus('${r.guru_id}','${bln}','lunas')" title="Tandai sudah dibayar">✓ Tandai Lunas</button>`
+        : ''}
+      <label class="btn btn-ghost btn-sm" title="Upload bukti transfer" style="cursor:pointer">
+        📎 Bukti <input type="file" accept="image/*,application/pdf" style="display:none" onchange="uploadFeeBukti('${r.guru_id}','${bln}',this)">
+      </label>
+    </div>
+    ${paid && localStorage.getItem(feeKey+'_bukti') ? `<div style="font-size:12px;color:var(--mint-ink);font-weight:700;margin-top:6px">📎 Bukti: ${localStorage.getItem(feeKey+'_bukti')}</div>` : ''}
+    <div id="feeDet${idx}" style="display:none;margin-top:10px">
+      <div class="table-wrap" style="background:var(--white)">
+        <table style="min-width:0"><thead><tr><th>Murid</th><th>Program</th><th>Sesi</th><th>Fee/Sesi</th><th>Subtotal</th></tr></thead>
+        <tbody>${r.detail.map(d=>`<tr><td>${d.nama_murid}</td><td>${progBadge(d.program)} <span style="font-size:11px;color:var(--muted)">${d.tipe}</span></td>
+          <td>${d.sesi}</td><td>${d.fee_per_sesi?LU.rp(d.fee_per_sesi):'<span style="color:var(--red)">Rp 0 — isi fee kelas!</span>'}</td>
+          <td><strong>${LU.rp(d.subtotal)}</strong></td></tr>`).join('')}</tbody></table>
+      </div>
+    </div>
+  </div>`;
+}
 async function loadFeeGuru(){
   const bln = document.getElementById('feeBulan').value;
   if(!bln){ showToast('Pilih bulan!','error'); return; }
@@ -1310,49 +1345,51 @@ async function loadFeeGuru(){
     const rows = await API.getFeeGuru(bln);
     if(!rows.length){ box.innerHTML='<div class="empty">Belum ada laporan guru di bulan ini ✦</div>'; return; }
     const grandTotal = rows.reduce((a,r)=>a+r.total_fee,0);
-    box.innerHTML = rows.map((r,i)=>{
+    window._feeRowsMap = {};
+    const html = rows.map((r,i)=>{
       const feeKey = `fee_${r.guru_id}_${bln}`;
       const paid = localStorage.getItem(feeKey) === 'lunas';
-      const badgeCls = paid ? 'bg-mint' : 'bg-yellow';
-      const badgeTxt = paid ? '✅ Sudah Dibayar' : '⏳ Belum Dibayar';
-      return `
-      <div style="border:2px dashed ${paid?'var(--mint)':'var(--blue)'};border-radius:16px;padding:14px 16px;margin-bottom:12px;background:${paid?'var(--mint-soft)':'var(--blue-soft)'}">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <strong style="font-family:'Baloo 2',cursive;font-size:15px">👩‍🏫 ${r.nama_guru}</strong>
-          <span class="badge bg-pink">${r.total_sesi} sesi laporan</span>
-          <span class="badge ${badgeCls}">${badgeTxt}</span>
-          <span style="margin-left:auto;font-weight:900;font-size:15px;color:var(--blue-ink)">${LU.rp(r.total_fee)}</span>
-          <button class="btn btn-ghost btn-sm" onclick="toggleFeeDet(${i})">detail ▾</button>
-          <button class="btn btn-blue btn-sm" onclick="copyFeeRekap(${i})" title="Salin rekap">📋</button>
-          ${paid
-            ? `<button class="btn btn-ghost btn-sm" onclick="toggleFeeStatus('${r.guru_id}','${bln}','belum')" title="Tandai belum dibayar">↩️</button>`
-            : `<button class="btn btn-mint btn-sm" onclick="toggleFeeStatus('${r.guru_id}','${bln}','lunas')" title="Tandai sudah dibayar">✓ Tandai Lunas</button>`}
-          <label class="btn btn-ghost btn-sm" title="Upload bukti transfer" style="cursor:pointer">
-            📎 Bukti <input type="file" accept="image/*,application/pdf" style="display:none" onchange="uploadFeeBukti('${r.guru_id}','${bln}',this)">
-          </label>
-        </div>
-        ${localStorage.getItem(feeKey+'_bukti') ? `<div style="font-size:12px;color:var(--mint-ink);font-weight:700;margin-top:6px">📎 Bukti: ${localStorage.getItem(feeKey+'_bukti')}</div>` : ''}
-        <div id="feeDet${i}" style="display:none;margin-top:10px">
-          <div class="table-wrap" style="background:var(--white)">
-            <table style="min-width:0"><thead><tr><th>Murid</th><th>Program</th><th>Sesi</th><th>Fee/Sesi</th><th>Subtotal</th></tr></thead>
-            <tbody>${r.detail.map(d=>`<tr><td>${d.nama_murid}</td><td>${progBadge(d.program)} <span style="font-size:11px;color:var(--muted)">${d.tipe}</span></td>
-              <td>${d.sesi}</td><td>${d.fee_per_sesi?LU.rp(d.fee_per_sesi):'<span style="color:var(--red)">Rp 0 — isi fee kelas!</span>'}</td>
-              <td><strong>${LU.rp(d.subtotal)}</strong></td></tr>`).join('')}</tbody></table>
-          </div>
-        </div>
-      </div>`;
-    }).join('') +
-      `<div style="text-align:right;font-weight:900;font-size:16px;color:var(--pink-ink);padding:6px 4px">TOTAL SEMUA GURU: ${LU.rp(grandTotal)}</div>`;
+      const cutoff = localStorage.getItem(feeKey+'_cutoff');
+      if(paid && cutoff){
+        // Pisah sesi: sebelum & sesudah cutoff
+        const mkDetail = fn => r.detail.map(d=>{
+          const filtered = (d.tanggals||[]).filter(fn);
+          return {...d, sesi:filtered.length, subtotal:filtered.length*d.fee_per_sesi, tanggals:filtered};
+        }).filter(d=>d.sesi>0);
+        const beforeD = mkDetail(t=>t<=cutoff);
+        const afterD  = mkDetail(t=>t>cutoff);
+        const bFee = beforeD.reduce((a,d)=>a+d.subtotal,0);
+        const aFee = afterD.reduce((a,d)=>a+d.subtotal,0);
+        const bSesi = beforeD.reduce((a,d)=>a+d.sesi,0);
+        const aSesi = afterD.reduce((a,d)=>a+d.sesi,0);
+        let out = '';
+        if(bSesi>0){
+          const rb = {...r, detail:beforeD, total_fee:bFee, total_sesi:bSesi};
+          window._feeRowsMap[i+'a'] = {r:rb, bln};
+          out += feeBlock(rb, i+'a', bln, true, `(s.d. ${LU.fmtDate(cutoff)})`);
+        }
+        if(aSesi>0){
+          const ra = {...r, detail:afterD, total_fee:aFee, total_sesi:aSesi};
+          window._feeRowsMap[i+'b'] = {r:ra, bln};
+          out += feeBlock(ra, i+'b', bln, false, `(sesi baru setelah ${LU.fmtDate(cutoff)})`);
+        }
+        return out || feeBlock(r, String(i), bln, paid, null);
+      }
+      window._feeRowsMap[String(i)] = {r, bln};
+      return feeBlock(r, String(i), bln, paid, null);
+    }).join('') + `<div style="text-align:right;font-weight:900;font-size:16px;color:var(--pink-ink);padding:6px 4px">TOTAL SEMUA GURU: ${LU.rp(grandTotal)}</div>`;
+    box.innerHTML = html;
     window._feeRows = rows; window._feeBulan = bln;
   }catch(e){ box.innerHTML='<div class="empty">Gagal: '+e.message+'</div>'; }
 }
-function toggleFeeDet(i){
-  const el = document.getElementById('feeDet'+i);
-  el.style.display = el.style.display==='none' ? 'block' : 'none';
+function toggleFeeDet(idx){
+  const el = document.getElementById('feeDet'+idx);
+  if(el) el.style.display = el.style.display==='none' ? 'block' : 'none';
 }
-function copyFeeRekap(i){
-  const r = (window._feeRows||[])[i]; if(!r) return;
-  const txt = `💰 Rekap Fee ${r.nama_guru} — ${LU.bulanID(window._feeBulan)}\n` +
+function copyFeeRekapByIdx(idx){
+  const entry = (window._feeRowsMap||{})[String(idx)]; if(!entry) return;
+  const {r, bln} = entry;
+  const txt = `💰 Rekap Fee ${r.nama_guru} — ${LU.bulanID(bln)}\n` +
     r.detail.map(d=>`• ${d.nama_murid} (${d.program}): ${d.sesi} sesi × ${LU.rp(d.fee_per_sesi)} = ${LU.rp(d.subtotal)}`).join('\n') +
     `\nTotal: ${r.total_sesi} sesi — ${LU.rp(r.total_fee)}\n\n— ${LU.getNamaBimbel()}`;
   navigator.clipboard.writeText(txt);
@@ -1473,8 +1510,13 @@ function refreshProgramList(){
 // ── FEE GURU PAYMENT STATUS ──────────────────────────────────
 function toggleFeeStatus(guruId, bulan, newStatus){
   const key = 'fee_'+guruId+'_'+bulan;
-  if(newStatus==='lunas') localStorage.setItem(key,'lunas');
-  else localStorage.removeItem(key);
+  if(newStatus==='lunas'){
+    localStorage.setItem(key,'lunas');
+    localStorage.setItem(key+'_cutoff', todayStr); // simpan tanggal tandai lunas untuk split tampilan
+  } else {
+    localStorage.removeItem(key);
+    localStorage.removeItem(key+'_cutoff');
+  }
   showToast(newStatus==='lunas'?'Fee ditandai lunas ✅':'Ditandai belum dibayar ⏳','success');
   loadFeeGuru();
 }
