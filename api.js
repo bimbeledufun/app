@@ -108,12 +108,28 @@ const LU = {
   getTeksLaporan() {
     try { return JSON.parse(localStorage.getItem('aida_settings') || '{}').teksLaporan || ''; } catch { return ''; }
   },
-  // Terapkan nama bimbel ke elemen header halaman (id="siteTitle")
+  // Terapkan nama bimbel ke semua elemen yang menampilkan nama bimbel
   applyBrandToPage() {
     const nama = this.getNamaBimbel();
     const el = document.getElementById('siteTitle');
     if (el) el.textContent = nama;
-    document.title = document.title.replace('AIDA BIMBEL', nama);
+    document.title = document.title.replace(/AIDA BIMBEL/g, nama);
+    ['taglineBimbel1','taglineBimbel2','heroSubBimbel','loginHintBimbel','waSender'].forEach(id => {
+      const e = document.getElementById(id);
+      if (e) e.textContent = nama;
+    });
+  },
+  // Ambil settings dari API, simpan ke localStorage, lalu apply ke halaman
+  async loadSettingsFromAPI() {
+    try {
+      const s = await API.getSettings();
+      if (s && typeof s === 'object') {
+        const current = JSON.parse(localStorage.getItem('aida_settings') || '{}');
+        Object.assign(current, s);
+        localStorage.setItem('aida_settings', JSON.stringify(current));
+      }
+    } catch(e) { /* offline / tidak login — pakai cache localStorage */ }
+    this.applyBrandToPage();
   },
   TIPE: ['Private', 'Semi Private', 'Home Service'],
   GRADES: ['Growing', 'Improving', 'Advanced'],
@@ -137,11 +153,21 @@ const LU = {
     try { const a = JSON.parse(json || '[]'); return Array.isArray(a) ? a : []; } catch { return []; }
   },
   stars: (n) => '★'.repeat(Number(n) || 0) + '☆'.repeat(Math.max(0, 4 - (Number(n) || 0))),
-  // Template WA invoice — pakai settings (nama, rekening, footer)
+  // Substitusi variabel {key} dalam template
+  applyTemplate(tpl, vars) {
+    return tpl.replace(/\{(\w+)\}/g, (_, key) => vars[key] !== undefined ? String(vars[key]) : '{' + key + '}');
+  },
+  // Template WA invoice — support full custom template atau default
   waInvoice: ({ bulan, nama, program, sesi, rate, total }) => {
-    const bimbel = LU.getNamaBimbel();
-    const bank   = LU.getBank();
-    const footer = LU.getTeksInvoice() || 'Mohon konfirmasi setelah melakukan pembayaran ya 🙏\nTerima kasih banyak atas kepercayaannya 😊';
+    const bimbel   = LU.getNamaBimbel();
+    const bank     = LU.getBank();
+    const template = LU.getTeksInvoice();
+    const vars = {
+      bimbel, bulan, nama: nama || '—', program: program || '—',
+      sesi, rate: LU.rp(rate), total: LU.rp(total), rekening: bank,
+    };
+    if (template) return LU.applyTemplate(template, vars);
+    // Default template
     return `Dear Parents,
 Berikut kami informasikan billing bulan ${bulan}
 
@@ -154,13 +180,13 @@ Jumlah Sesi: ${sesi}
 Pembayaran dapat dilakukan melalui:
 ${bank}
 
-${footer}
+Mohon konfirmasi setelah melakukan pembayaran ya 🙏
+Terima kasih banyak atas kepercayaannya 😊
 — ${bimbel}`;
   },
-  // Template WA laporan harian — pakai settings (nama, footer) + extra fields
+  // Template WA laporan harian — support full custom template atau default
   waLaporan: ({ tanggal, nama, program, tipe, materi, catatan, extra }) => {
     const bimbel = LU.getNamaBimbel();
-    const footer = LU.getTeksLaporan() || 'Terima kasih atas kepercayaannya 🙏';
     const tglFmt = tanggal
       ? new Date(tanggal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
       : '—';
@@ -169,6 +195,19 @@ ${footer}
       : '—';
     let extraObj = {};
     try { extraObj = (typeof extra === 'string' ? JSON.parse(extra) : extra) || {}; } catch {}
+    const template = LU.getTeksLaporan();
+    if (template) {
+      return LU.applyTemplate(template, {
+        bimbel, tanggal: tglFmt, nama: nama || '—',
+        program: program || '—', tipe: tipe || '',
+        materi: materiTxt,
+        rincian:  extraObj.rincian  || '',
+        prestasi: extraObj.prestasi || '',
+        kendala:  extraObj.kendala  || '',
+        catatan:  catatan || '—',
+      });
+    }
+    // Default template
     const rincianTxt  = extraObj.rincian  ? `\n\n📖 Rincian Materi:\n${extraObj.rincian}`  : '';
     const prestasiTxt = extraObj.prestasi ? `\n\n🏆 Prestasi Siswa:\n${extraObj.prestasi}` : '';
     const kendalaTxt  = extraObj.kendala  ? `\n\n⚡ Kendala & Evaluasi:\n${extraObj.kendala}` : '';
@@ -185,7 +224,7 @@ ${materiTxt}${rincianTxt}${prestasiTxt}${kendalaTxt}
 📝 Catatan Tutor:
 ${catatan || '—'}
 
-${footer}
+Terima kasih atas kepercayaannya 🙏
 — ${bimbel}`;
   },
 };

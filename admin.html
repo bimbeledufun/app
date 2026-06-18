@@ -428,13 +428,21 @@ tr:hover td{background:#FFFAF8}
         <code style="background:var(--mint-soft);color:var(--mint-ink);padding:2px 6px;border-radius:6px">{bulan}</code>
         <code style="background:var(--yellow-soft);color:var(--yellow-ink);padding:2px 6px;border-radius:6px">{total}</code>
       </div>
-      <div class="form-field" style="margin-bottom:12px">
-        <label>Footer / Penutup WA Invoice</label>
-        <textarea id="setTeksInvoice" rows="3" placeholder="Mohon konfirmasi setelah melakukan pembayaran ya 🙏&#10;Terima kasih banyak atas kepercayaannya 😊&#10;— AIDA BIMBEL"></textarea>
+      <div class="form-field" style="margin-bottom:4px">
+        <label>Template WA Invoice (opsional)</label>
+        <textarea id="setTeksInvoice" rows="8" placeholder="Dear Parents,&#10;Tagihan bulan {bulan}&#10;&#10;Nama: {nama}&#10;Program: {program}&#10;Sesi: {sesi} × {rate}&#10;Total: {total}&#10;&#10;Transfer ke:&#10;{rekening}&#10;&#10;Mohon konfirmasi setelah bayar ya 🙏&#10;— {bimbel}"></textarea>
       </div>
-      <div class="form-field" style="margin-bottom:16px">
-        <label>Penutup WA Laporan Harian</label>
-        <textarea id="setTeksLaporan" rows="3" placeholder="Terima kasih atas kepercayaannya 🙏&#10;— AIDA BIMBEL"></textarea>
+      <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:14px">
+        Variabel: <code style="background:var(--pink-soft);color:var(--pink-ink);padding:1px 5px;border-radius:5px">{bimbel}</code> <code style="background:var(--blue-soft);color:var(--blue-ink);padding:1px 5px;border-radius:5px">{bulan}</code> <code style="background:var(--mint-soft);color:var(--mint-ink);padding:1px 5px;border-radius:5px">{nama}</code> <code style="background:var(--yellow-soft);color:var(--yellow-ink);padding:1px 5px;border-radius:5px">{program}</code> <code style="background:var(--pink-soft);color:var(--pink-ink);padding:1px 5px;border-radius:5px">{sesi}</code> <code style="background:var(--blue-soft);color:var(--blue-ink);padding:1px 5px;border-radius:5px">{rate}</code> <code style="background:var(--mint-soft);color:var(--mint-ink);padding:1px 5px;border-radius:5px">{total}</code> <code style="background:var(--yellow-soft);color:var(--yellow-ink);padding:1px 5px;border-radius:5px">{rekening}</code>
+        &nbsp;· Jika kosong, gunakan format default.
+      </div>
+      <div class="form-field" style="margin-bottom:4px">
+        <label>Template WA Laporan Harian (opsional)</label>
+        <textarea id="setTeksLaporan" rows="8" placeholder="Halo parents! 👋&#10;&#10;Laporan Belajar — {bimbel}&#10;{tanggal}&#10;Nama: {nama}&#10;Program: {program}&#10;&#10;Materi:&#10;{materi}&#10;&#10;Rincian: {rincian}&#10;Prestasi: {prestasi}&#10;Kendala: {kendala}&#10;&#10;Catatan: {catatan}&#10;&#10;— {bimbel}"></textarea>
+      </div>
+      <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:16px">
+        Variabel: <code style="background:var(--pink-soft);color:var(--pink-ink);padding:1px 5px;border-radius:5px">{bimbel}</code> <code style="background:var(--blue-soft);color:var(--blue-ink);padding:1px 5px;border-radius:5px">{tanggal}</code> <code style="background:var(--mint-soft);color:var(--mint-ink);padding:1px 5px;border-radius:5px">{nama}</code> <code style="background:var(--yellow-soft);color:var(--yellow-ink);padding:1px 5px;border-radius:5px">{program}</code> <code style="background:var(--pink-soft);color:var(--pink-ink);padding:1px 5px;border-radius:5px">{tipe}</code> <code style="background:var(--blue-soft);color:var(--blue-ink);padding:1px 5px;border-radius:5px">{materi}</code> <code style="background:var(--mint-soft);color:var(--mint-ink);padding:1px 5px;border-radius:5px">{rincian}</code> <code style="background:var(--yellow-soft);color:var(--yellow-ink);padding:1px 5px;border-radius:5px">{prestasi}</code> <code style="background:var(--pink-soft);color:var(--pink-ink);padding:1px 5px;border-radius:5px">{kendala}</code> <code style="background:var(--blue-soft);color:var(--blue-ink);padding:1px 5px;border-radius:5px">{catatan}</code>
+        &nbsp;· Jika kosong, gunakan format default.
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn btn-primary" onclick="saveSettings()">💾 Simpan Pengaturan</button>
@@ -1156,7 +1164,7 @@ function kirimInvWA(i){
   }
 }
 async function tandaiLunas(id){
-  if(!confirm('Tandai invoice ini LUNAS? Hitungan sesi berjalan murid akan di-reset dari tanggal ini.')) return;
+  if(!confirm('Tandai invoice ini sebagai LUNAS?')) return;
   try{
     await API.updateInvoiceStatus(id,'lunas',todayStr);
     showToast('Lunas! ✅','success');

@@ -48,7 +48,7 @@ input,select,textarea,button{font-family:'Plus Jakarta Sans',sans-serif}
 
 main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
 .card{background:var(--white);border-radius:20px;padding:20px;margin-bottom:16px;box-shadow:0 3px 16px rgba(232,145,165,.10);border:1.5px solid var(--border)}
-.card-title{font-family:'Baloo 2',cursive;font-weight:800;font-size:16px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card-title{font-weight:800;font-size:16px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 
 .form-field label{font-size:11px;font-weight:800;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
 .form-field input{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:13px;font-size:15px;font-weight:700;color:var(--ink-strong);outline:none}
@@ -64,7 +64,7 @@ main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
 .bg-red{background:var(--red-soft);color:#C0564F}
 
 .anak-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:4px 0 8px}
-.anak-chip{padding:9px 20px;border-radius:999px;font-size:14px;font-weight:800;border:2px dashed var(--blue);background:var(--white);color:var(--blue-ink);cursor:pointer;transition:all .2s;font-family:'Baloo 2',cursive}
+.anak-chip{padding:9px 20px;border-radius:999px;font-size:14px;font-weight:800;border:2px dashed var(--blue);background:var(--white);color:var(--blue-ink);cursor:pointer;transition:all .2s}
 .anak-chip:hover{transform:translateY(-2px)}
 .anak-chip.active{background:var(--pink-dark);border-color:var(--pink-dark);color:#fff;box-shadow:0 4px 12px rgba(232,145,165,.4)}
 
@@ -95,7 +95,7 @@ main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(40px);background:var(--ink-strong);color:#fff;padding:10px 22px;border-radius:999px;font-size:13px;font-weight:800;z-index:9999;transition:all .3s;white-space:nowrap;opacity:0}
 #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 #toast.success{background:var(--green)}#toast.error{background:var(--red)}
-.tagline{text-align:center;font-style:italic;font-weight:800;font-size:13px;color:var(--blue-ink);margin-top:20px}
+.tagline{text-align:center;font-weight:800;font-size:13px;color:var(--blue-ink);margin-top:20px}
 .tagline .pk{color:var(--pink-ink)}
 
 /* ─── REPORT SHEET (print per paket) ─── */
@@ -119,7 +119,7 @@ main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
 .rs-table td.rs-check{text-align:center;width:28px;padding:3px}
 .rs-cb{display:inline-block;width:14px;height:14px;border:1.5px solid #1a1a1a;border-radius:3px;line-height:12px;font-size:10px;font-weight:900;text-align:center}
 .rs-cb.on{background:#3D6FB4;color:#fff;border-color:#3D6FB4}
-.rs-tagline{text-align:center;font-style:italic;font-weight:800;font-size:13px;color:#3D6FB4;margin-top:20px}
+.rs-tagline{text-align:center;font-weight:800;font-size:13px;color:#3D6FB4;margin-top:20px}
 
 @media print{
   body *{visibility:hidden}
@@ -151,7 +151,7 @@ main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
   <span class="spark" style="top:22px;left:30%">✦</span>
   <span class="spark s2" style="top:60px;right:26%">✦</span>
   <h1 id="heroTitle">Selamat Datang, <span class="hl">Parents</span> 👋</h1>
-  <p id="heroSub">Login dengan nomor HP yang terdaftar di admin AIDA BIMBEL</p>
+  <p id="heroSub">Login dengan nomor HP yang terdaftar di admin <span id="heroSubBimbel">AIDA BIMBEL</span></p>
 </div>
 
 <!-- LOGIN -->
@@ -164,9 +164,9 @@ main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
       <input type="tel" id="loginPhone" placeholder="08..." inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <button class="btn btn-primary btn-full" id="loginBtn" onclick="doLogin()">✨ Masuk</button>
-    <div style="font-size:12px;color:var(--muted);font-weight:700;text-align:center;margin-top:12px">Nomor belum terdaftar? Hubungi admin AIDA BIMBEL ya 🙏</div>
+    <div style="font-size:12px;color:var(--muted);font-weight:700;text-align:center;margin-top:12px">Nomor belum terdaftar? Hubungi admin <span id="loginHintBimbel">AIDA BIMBEL</span> ya 🙏</div>
   </div>
-  <div class="tagline">☆ Belajar dengan semangat bersama <span class="pk">AIDA BIMBEL</span> ☆</div>
+  <div class="tagline">☆ Belajar dengan semangat bersama <span class="pk" id="taglineBimbel1">AIDA BIMBEL</span> ☆</div>
 </main>
 
 <!-- KONTEN -->
@@ -196,7 +196,7 @@ main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
     <input type="file" id="buktiFile" accept="image/*" style="display:none" onchange="uploadBuktiFile()">
   </div>
 
-  <div class="tagline">☆ Belajar dengan semangat bersama <span class="pk">AIDA BIMBEL</span> ☆</div>
+  <div class="tagline">☆ Belajar dengan semangat bersama <span class="pk" id="taglineBimbel2">AIDA BIMBEL</span> ☆</div>
 </main>
 
 <div id="toast">—</div>
@@ -217,7 +217,7 @@ let lapPage = 1;
 const LAP_PER_PAGE = 10;
 
 window.addEventListener('DOMContentLoaded', async () => {
-  LU.applyBrandToPage();
+  await LU.loadSettingsFromAPI();
   const saved = sessionStorage.getItem('aida_ortu');
   if (saved) {
     try {
@@ -468,7 +468,7 @@ async function downloadKelasReport(kelasId, programLabel){
         </thead>
         <tbody>${rowsHtml}</tbody>
       </table>
-      <div class="rs-tagline">☆ Belajar dengan semangat bersama <span style="color:#E8638C">AIDA BIMBEL</span> ☆</div>`;
+      <div class="rs-tagline">☆ Belajar dengan semangat bersama <span style="color:#E8638C">${LU.getNamaBimbel()}</span> ☆</div>`;
   }catch(e){
     sheet.innerHTML = '<div style="padding:20px;color:#ef4444;font-weight:700">Gagal memuat laporan: '+e.message+'</div>';
   }

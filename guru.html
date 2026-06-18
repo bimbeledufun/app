@@ -302,7 +302,7 @@ main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
         <div class="dot" style="background:#28C840"></div>
       </div>
       <div style="margin-bottom:6px">
-        <div class="wa-sender">AIDA BIMBEL</div>
+        <div class="wa-sender" id="waSender">AIDA BIMBEL</div>
         <div class="wa-bubble"><span id="waText">— pilih guru dan murid dulu —</span></div>
         <div class="wa-time" id="waTimeDisp">—</div>
       </div>
@@ -500,7 +500,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   addMateriRow();
   ttdInit();
-  LU.applyBrandToPage();
+  await LU.loadSettingsFromAPI();
 
   // Auto-login kalau pernah login di sesi ini
   const savedPhone = sessionStorage.getItem('aida_guru');
