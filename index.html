@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AIDA BIMBEL</title>
+<title>Bimbel Edufun</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -63,7 +63,7 @@ footer{text-align:center;padding:24px;font-size:12px;color:var(--muted);font-wei
 
 <div class="hero">
   <div class="hero-logo-placeholder">🏫</div>
-  <h1>AIDA BIMBEL</h1>
+  <h1 id="siteTitle">Bimbel Edufun</h1>
   <p>Platform manajemen bimbingan belajar terpadu</p>
 </div>
 
@@ -121,7 +121,18 @@ footer{text-align:center;padding:24px;font-size:12px;color:var(--muted);font-wei
   </div>
 </div>
 
-<footer>© 2026 AIDA BIMBEL · Semua hak dilindungi</footer>
+<footer>© 2026 <span id="footerBimbel">Bimbel Edufun</span> · Semua hak dilindungi</footer>
 
+<script src="api.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  LU.applyBrandToPage();
+  LU.loadSettingsFromAPI().then(() => {
+    LU.applyBrandToPage();
+    const fb = document.getElementById('footerBimbel');
+    if (fb) fb.textContent = LU.getNamaBimbel();
+  });
+});
+</script>
 </body>
 </html>

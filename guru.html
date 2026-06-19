@@ -141,6 +141,32 @@ main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
 .ttd-canvas-wrap{border:2px dashed var(--pink-dark);border-radius:14px;background:#fff;overflow:hidden;touch-action:none;position:relative}
 #ttdCanvas{display:block;width:100%;height:130px;cursor:crosshair}
 .ttd-placeholder{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;font-weight:700;color:var(--muted);pointer-events:none;text-align:center;line-height:1.5}
+
+/* ─── GURU REPORT SHEET (print per kelas) ─── */
+#guruReportSheet{background:#fff;max-width:820px;margin:0 auto;padding:40px 46px;color:#1a1a1a;font-family:'Nunito',sans-serif;border:1.5px solid var(--border);border-radius:8px}
+.grs-head{display:flex;align-items:center;gap:22px;margin-bottom:26px}
+.grs-logo{width:100px;height:auto;object-fit:contain}
+.grs-titlebox{flex:1;background:#A7C7E7;border:2px solid #1a1a1a;padding:18px 10px;text-align:center}
+.grs-titlebox h2{font-size:20px;font-weight:900;color:#1a1a1a;letter-spacing:2px}
+.grs-meta{display:grid;grid-template-columns:1fr 1fr 1fr;border:2px solid #1a1a1a;margin-bottom:18px}
+.grs-meta>div{padding:10px 14px;border-right:1.5px solid #1a1a1a;font-size:13px;font-weight:700}
+.grs-meta>div:last-child{border-right:none}
+.grs-lbl{font-size:10px;font-weight:900;letter-spacing:1px;color:#555;text-transform:uppercase;margin-bottom:3px}
+.grs-table{width:100%;border-collapse:collapse;font-size:13px}
+.grs-table th,.grs-table td{border:1.5px solid #1a1a1a;padding:7px 10px;text-align:left;vertical-align:top}
+.grs-table thead{background:#A7C7E7}
+.grs-table th{font-weight:900;font-size:11px;letter-spacing:.5px}
+.grs-date{font-size:12px;font-weight:700;white-space:nowrap;min-width:70px}
+.grs-check{text-align:center;width:32px}
+.grs-cb{display:inline-block;width:14px;height:14px;border:1.5px solid #1a1a1a;border-radius:3px;line-height:12px;font-size:10px;font-weight:900;text-align:center}
+.grs-cb.on{background:#3D6FB4;color:#fff;border-color:#3D6FB4}
+.grs-tagline{text-align:center;font-weight:800;font-size:13px;color:#3D6FB4;margin-top:20px}
+@media print{
+  body *{visibility:hidden}
+  #guruReportSheet,#guruReportSheet *{visibility:visible}
+  #guruReportSheet{position:absolute;left:0;top:0;width:100%;max-width:none;border:none;border-radius:0;padding:18px 28px}
+  @page{size:A4;margin:12mm}
+}
 </style>
 </head>
 <body>
@@ -287,7 +313,10 @@ main{max-width:680px;margin:0 auto;padding:8px 16px 48px}
 
   <!-- RIWAYAT -->
   <div class="card" id="historyCard" style="display:none">
-    <div class="card-title">📜 Riwayat Sesi Terakhir</div>
+    <div class="card-title" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span>📜 Riwayat Sesi Terakhir</span>
+      <button class="btn btn-blue" style="font-size:11px;padding:5px 12px" onclick="downloadGuruReport()">📥 PDF Laporan</button>
+    </div>
     <div id="historyList"><div class="empty-state">Memuat riwayat...</div></div>
   </div>
 
@@ -754,6 +783,64 @@ function showToast(msg, type = '') {
   t.textContent = msg; t.className = 'show ' + (type || '');
   setTimeout(() => t.className = '', 3500);
 }
+
+// ── PDF LAPORAN GURU PER KELAS ───────────────────────────────
+async function downloadGuruReport(){
+  const k = currentKelas();
+  if(!k){ showToast('Pilih siswa / kelas dulu!','error'); return; }
+  const wrap = document.getElementById('guruReportWrap');
+  const sheet = document.getElementById('guruReportSheet');
+  wrap.style.display = 'block';
+  sheet.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">⏳ Menyiapkan laporan...</div>';
+  wrap.scrollIntoView({behavior:'smooth'});
+  try{
+    const all = await API.getLaporan({kelas_id: k.id});
+    const rows = (Array.isArray(all) ? all : []).sort((a,b)=> a.tanggal > b.tanggal ? 1 : -1);
+    const rowsHtml = rows.length ? rows.map(l=>{
+      const materi = LU.parseMateri(l.materi_json);
+      if(!materi.length) materi.push({m:'—',s:0});
+      const fotoHtml = l.foto ? `<img src="${l.foto}" style="max-width:80px;max-height:60px;border-radius:6px;object-fit:contain;border:1px solid #ccc">` : '';
+      const ttdHtml  = l.ttd  ? `<img src="${l.ttd}"  style="max-width:80px;max-height:40px;border-radius:4px;object-fit:contain;border:1px solid #ccc;background:#fff">` : '';
+      const buktiHtml = (fotoHtml || ttdHtml) ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">${fotoHtml}${ttdHtml}</div>` : '';
+      return materi.map((x,i)=>`<tr>
+        ${i===0?`<td class="grs-date" rowspan="${materi.length}">${LU.fmtDateDDMM(l.tanggal)}${buktiHtml}</td>`:''}
+        <td>${x.m}</td>
+        ${[1,2,3,4].map(n=>`<td class="grs-check"><span class="grs-cb ${n<=x.s?'on':''}">${n<=x.s?'✓':''}</span></td>`).join('')}
+      </tr>`).join('');
+    }).join('')
+    : '<tr><td colspan="6" style="text-align:center;padding:18px">Belum ada laporan</td></tr>';
+    sheet.innerHTML = `
+      <div class="grs-head">
+        <img src="logo.png" class="grs-logo" onerror="this.style.display='none'">
+        <div class="grs-titlebox"><h2>${LU.getNamaBimbel().toUpperCase()} REPORT</h2></div>
+      </div>
+      <div class="grs-meta">
+        <div><div class="grs-lbl">PROGRAM</div>${k.program||'—'} ${k.tipe||''}</div>
+        <div><div class="grs-lbl">NAMA SISWA</div>${k.nama_murid||'—'}</div>
+        <div><div class="grs-lbl">TOTAL SESI</div>${rows.length} sesi · Guru: ${k.nama_guru||'—'}</div>
+      </div>
+      <table class="grs-table">
+        <thead>
+          <tr><th rowspan="2" style="width:100px">Tanggal</th><th rowspan="2">Materi</th><th colspan="4">Progress</th></tr>
+          <tr><th class="grs-check">★</th><th class="grs-check">★</th><th class="grs-check">★</th><th class="grs-check">★</th></tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      <div class="grs-tagline">☆ Laporan belajar — <span style="color:#E8638C">${LU.getNamaBimbel()}</span> ☆</div>`;
+  }catch(e){
+    sheet.innerHTML = '<div style="padding:20px;color:#ef4444;font-weight:700">Gagal memuat laporan: '+e.message+'</div>';
+  }
+}
 </script>
+
+<!-- GURU REPORT PRINT AREA -->
+<div id="guruReportWrap" style="display:none;max-width:700px;margin:0 auto;padding:16px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+    <button class="btn btn-blue" onclick="document.getElementById('guruReportWrap').style.display='none'">✕ Tutup</button>
+    <button class="btn btn-primary" onclick="window.print()">🖨️ Print / Save PDF</button>
+  </div>
+  <div id="guruReportSheet"></div>
+</div>
+
 </body>
 </html>
